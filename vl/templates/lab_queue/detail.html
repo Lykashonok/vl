@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+{% block title %}{{queue.queue_title}}{% endblock %}
+
+{% block content %}
+
+    {{queue}}
+    {% if users %}
+        <br>
+        {% for user_in_queue in users %}
+            <div>
+                <div>
+                    {{user_in_queue.uiq_index}}.
+                </div>
+                <div>
+                    {{user_in_queue.uiq_first_name}} {{user_in_queue.uiq_second_name}} {{user_in_queue.uiq_group}} <br>
+                    {{user_in_queue.uiq_info}}
+                    {% if user_in_queue.uiq_want_to_swap and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
+                        <h5>Вы готовы поменятся местами</h5>
+                    {% endif%}
+                    {% if user_in_queue.uiq_want_to_swap and user_in_queue.uiq_user_id != current_user.uiq_user_id %}
+                        <form action='' method='POST'>
+                            {% csrf_token %}
+                            <button type='submit' name='queue_swap' value="{{user_in_queue.uiq_user_id}}">Махнуться местами</button>
+                        </form>
+                    {% endif %}
+                </div>
+                {% if current_user and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
+                    <form action='' method='POST'>
+                        {% csrf_token %}
+                        <button type='submit' name='queue_swap_state'>Хочу махнуться местами</button>
+                        <input type="text" name="queue_change_info_text">
+                        <button type='submit' name='queue_change_info'>Поменять доп. инфу</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <br>
+    {% else %}
+        <br>Эта очередь пустая<br>
+    {% endif %}
+    {% if user.id != current_user.uiq_user_id %}
+        <form action='' method='POST'>
+            {% csrf_token %}
+            <button type='submit' name='queue_enter'>Запрыгнуть в очередь</button>
+            {{ queue_enter_form|crispy }}
+        </form>
+    {% else %}
+        <form action='' method='POST'>
+            {% csrf_token %}
+            <button type='submit' name='queue_exit'>Выпрыгнуть</button>
+        </form>
+    {% endif %}
+
+{% endblock %}

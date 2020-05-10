@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %} Выход {% endblock %}
+
+{% block content %}
+
+    <div>
+        <h2>Вы вышли из аккаунта, надоело быть в очередях?</h2>
+        <p>Нет, я <a href="{% url 'lab_queue:login' %}">зайду ещё раз</a></p>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %} Вход {% endblock %}
+
+{% block content %}
+
+    <div>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <legend>Войти</legend>
+            <fieldset>
+                {{ form|crispy }}
+            </fieldset>
+            <div>
+                <button type="submit">Войти</button>
+            </div>
+        </form>
+        <div>
+            <small>
+                Ещё не зарегистрированы ? <a href="{% url 'lab_queue:register' %}">Зарегистрироваться</a>
+            </small>
+        </div>
+    </div>
+
+{% endblock %}
