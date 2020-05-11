@@ -3,6 +3,12 @@
 {% load crispy_forms_tags %}
 {% block title %}{{queue.queue_title}}{% endblock %}
 {% block content %}
+    <script type="text/javascript">
+        function submitFunction() {
+            let user_choise = window.confirm('Действительно хочешь удалить очередь?');
+
+        }
+    </script>
     <form action="">
         {% csrf_token %}
         <button type="submit">↻</button>
@@ -64,6 +70,20 @@
         <form action='' method='POST'>
             {% csrf_token %}
             <button type='submit' name='queue_exit'>Выпрыгнуть</button>
+        </form>
+    {% endif %}
+    {% if user.profile.user_type == 'headman' %}
+        <form action='' method='POST'>
+            {% csrf_token %}
+            <div>
+                {% if not queue_delete_start %}
+                    <button type='submit' name='queue_delete_start'>Удалить очередь</button>
+                {% else %}
+                    <p>Уверены?</p>
+                    <button type='submit' name='queue_delete_confirm_true' value="{{queue.queue_id}}">Да</button>
+                    <button type='submit' name='queue_delete_confirm_false'>Нет</button>
+                {% endif %}
+            </div>
         </form>
     {% endif %}
 

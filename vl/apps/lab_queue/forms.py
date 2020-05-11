@@ -59,3 +59,8 @@ class ChangeQueueIndexForm(forms.Form):
 
 class ChangeInfoForm(forms.Form):
     uiq_info = forms.CharField(required = False)
+
+class ConfirmForm(forms.Form):
+    queue_delete_start = forms.BooleanField(required = False)
+    queue_delete_confirm_true = forms.IntegerField(required = False)
+    queue_delete_confirm_false = forms.BooleanField(required = False)

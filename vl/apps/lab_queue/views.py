@@ -6,7 +6,7 @@ from django import forms
 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from .forms import UserRegisterForm, ProfileForm, QueueEnterForm, ChangeQueueIndexForm, ChangeInfoForm, NewQueueForm
+from .forms import UserRegisterForm, ProfileForm, QueueEnterForm, ChangeQueueIndexForm, ChangeInfoForm, NewQueueForm, ConfirmForm
 from .other import swap_instances_index
 
 from .models import Queue, UserInQueue, Profile
@@ -14,27 +14,24 @@ from django.contrib.auth.decorators import login_required
 
 def index(request):
     overall_list = Queue.objects.order_by('queue_create_date')
-    return render(request, 'lab_queue/mainlist.html',
-    {
-        'overall_list' : overall_list
-    })
+    return render(request, 'lab_queue/mainlist.html', { 'overall_list' : overall_list })
 
 @login_required
 def detail(request, queue_id):
     # try:
     queue_enter_form = QueueEnterForm()
     queue = Queue.objects.get( queue_id = queue_id )
-    users = UserInQueue.objects.filter( uiq_queue_id = queue_id).order_by('uiq_index')
+    users = UserInQueue.objects.filter( uiq_queue_id = queue_id ).order_by('uiq_index')
     current_user = list(filter(lambda item: item.uiq_user_id == request.user.id, users))
-
+    context = {
+        'queue': queue, 
+        'users': users,
+    }
     if request.method == 'POST':
         if 'queue_enter' in request.POST:
             if len(current_user) != 0:
-                return render(request, 'lab_queue/detail.html', {
-                    'queue': queue, 
-                    'users': users, 
-                    'current_user': current_user[0],
-                })
+                context.update({'current_user': current_user[0]})
+                return render(request, 'lab_queue/detail.html', context)
             queue_enter_form = QueueEnterForm(request.POST)
             info = queue_enter_form.cleaned_data.get('uiq_info') if queue_enter_form.is_valid() else ''
             new_user_in_queue = UserInQueue(
@@ -49,7 +46,7 @@ def detail(request, queue_id):
             messages.success(request, f'{request.user.first_name}, Вы вошли в очередь, удачи подождать.')
             new_user_in_queue.save()
         elif 'queue_exit' in request.POST:
-            user_to_exit = UserInQueue.objects.filter(uiq_user_id = request.user.id)[0]
+            user_to_exit = UserInQueue.objects.filter(uiq_user_id = request.user.id, uiq_queue_id = queue_id)[0]
             other_users = UserInQueue.objects.filter(uiq_queue_id = user_to_exit.uiq_queue_id, uiq_index__gt = user_to_exit.uiq_index)
             for user in other_users:
                 user.uiq_index -= 1
@@ -57,7 +54,7 @@ def detail(request, queue_id):
             user_to_exit.delete()
             messages.success(request, f'{request.user.first_name}, Вы успешно покинули очередь, хоть и непонятно зачем.')
         elif 'queue_swap_state' in request.POST:
-            user_to_swap = UserInQueue.objects.filter(uiq_user_id = request.user.id)
+            user_to_swap = UserInQueue.objects.filter(uiq_user_id = request.user.id, uiq_queue_id = queue_id)
             value = user_to_swap[0].uiq_want_to_swap
             if value:
                 user_to_swap.update(uiq_want_to_swap = False)
@@ -67,8 +64,10 @@ def detail(request, queue_id):
             form = ChangeQueueIndexForm(request.POST)
             if form.is_valid():
                 queue_swap_id = form.cleaned_data.get('queue_swap')
-                user_to_swap = UserInQueue.objects.filter(uiq_user_id = queue_swap_id)[0]
-                user = UserInQueue.objects.filter(uiq_user_id = request.user.id)[0]
+                user_to_swap = UserInQueue.objects.filter(uiq_user_id = queue_swap_id, uiq_queue_id = queue_id)[0]
+                user = UserInQueue.objects.filter(uiq_user_id = request.user.id, uiq_queue_id = queue_id)[0]
+                print(user_to_swap)
+                print(user)
                 if user_to_swap.uiq_want_to_swap:
                     user, user_to_swap = swap_instances_index(user, user_to_swap)
                     user_to_swap.save()
@@ -78,9 +77,12 @@ def detail(request, queue_id):
                     messages.error(request, f'{request.user.first_name}, не получилось поменяться местами!')
         elif 'queue_change_info' in request.POST:
             form = ChangeInfoForm(request.POST)
+            print(form)
             if form.is_valid():
+                
                 uiq_info = form.cleaned_data.get('uiq_info')
-                uiq_user = UserInQueue.objects.filter(uiq_user_id = request.user.id)[0]
+                print(form.cleaned_data)
+                uiq_user = UserInQueue.objects.filter(uiq_user_id = request.user.id, uiq_queue_id = queue_id)[0]
                 uiq_user.uiq_info = uiq_info
                 uiq_user.save()
                 messages.success(request, f'{request.user.first_name}, вы изменили дополнительную информацию.')
@@ -88,7 +90,7 @@ def detail(request, queue_id):
             form = ChangeQueueIndexForm(request.POST)
             if form.is_valid():
                 queue_swap_id = form.cleaned_data.get('queue_move_up')
-                user = UserInQueue.objects.filter(uiq_user_id = queue_swap_id)[0]
+                user = UserInQueue.objects.filter(uiq_user_id = queue_swap_id, uiq_queue_id = queue_id)[0]
                 user_to_swap = UserInQueue.objects.filter(uiq_queue_id = user.uiq_queue_id, uiq_index = int(user.uiq_index) - 1)
                 if len(user_to_swap) != 0:
                     user_to_swap = user_to_swap[0]
@@ -102,7 +104,7 @@ def detail(request, queue_id):
             form = ChangeQueueIndexForm(request.POST)
             if form.is_valid():
                 queue_swap_id = form.cleaned_data.get('queue_move_down')
-                user = UserInQueue.objects.filter(uiq_user_id = queue_swap_id)[0]
+                user = UserInQueue.objects.filter(uiq_user_id = queue_swap_id, uiq_queue_id = queue_id)[0]
                 user_to_swap = UserInQueue.objects.filter(uiq_queue_id = user.uiq_queue_id, uiq_index = int(user.uiq_index) + 1)
                 if len(user_to_swap) != 0:
                     user_to_swap = user_to_swap[0]
@@ -112,22 +114,44 @@ def detail(request, queue_id):
                     messages.success(request, f'{request.user.first_name}, Вы успешно поменяли местами.')
                 else:
                     messages.error(request, f'{request.user.first_name}, не получилось поменять местами!')
+        elif 'queue_delete_start' in request.POST:
+            form = ConfirmForm(request.POST)
+            if form.is_valid():
+                context.update({'queue_delete_start' : True})
+                return render(request, 'lab_queue/detail.html', context)
+        elif 'queue_delete_confirm_true' in request.POST:
+            form = ConfirmForm(request.POST)
+            if form.is_valid():
+                uiq_queue_id = form.cleaned_data.get('queue_delete_confirm_true')
+                queue_to_delete = Queue.objects.filter(queue_id = uiq_queue_id)
+                print(form.cleaned_data)
+                print(uiq_queue_id)
+                print(queue_to_delete)
+                if queue_to_delete[0]:
+                    queue_to_delete[0].delete()
+                    messages.success(request, f'{request.user.first_name}, Вы успешно удалили очередь.')
+                else:
+                    messages.error(request, f'{request.user.first_name}, удалить не получилось, возможно, её уже нет!')
+                context = { 'overall_list' : Queue.objects.order_by('queue_create_date') }
+                return render(request, 'lab_queue/mainlist.html', context)
+        elif 'queue_delete_confirm_false' in request.POST:
+            form = ConfirmForm(request.POST)
+            if form.is_valid():
+                context.update({'queue_delete_start' : False})
+                return render(request, 'lab_queue/detail.html', context)
     # except:
     #     raise Http404("Не получилось найти очередь. Скорее всего её уже удалили")
     queue = Queue.objects.get( queue_id = queue_id )
-    users = UserInQueue.objects.filter( uiq_queue_id = queue_id).order_by('uiq_index')
+    users = UserInQueue.objects.filter( uiq_queue_id = queue_id ).order_by('uiq_index')
     current_user = list(filter(lambda item: item.uiq_user_id == request.user.id, users))
-    if len(current_user) == 0:
-        return render(request, 'lab_queue/detail.html', {
-            'queue': queue, 
-            'users': users, 
-        })
-    else:
-        return render(request, 'lab_queue/detail.html', {
-            'queue': queue, 
-            'users': users, 
-            'current_user': current_user[0],
-        })
+    context = {
+        'queue': queue, 
+        'users': users,
+    }
+    if len(current_user) != 0:
+        context.update({'current_user': current_user[0]})
+        
+    return render(request, 'lab_queue/detail.html', context)
 
 def register(request):
     if request.method == 'POST':
@@ -154,17 +178,14 @@ def register(request):
 @login_required
 def newqueue(request):
     form = NewQueueForm()
-    print('test newqueue', form.is_valid())
-    
     if request.method == 'POST':
         form = NewQueueForm(request.POST)
         if form.is_valid():
-            qwer = form.save()
-            print('solid,',qwer)
-    return render(request, 'lab_queue/newqueue.html',
-    {
-        'form' : form
-    })
+            form.save()
+            overall_list = Queue.objects.order_by('queue_create_date')
+            messages.success(request, f'Очередь была создана, удачи в ней постоять, {request.user.first_name}')
+            return render(request, 'lab_queue/mainlist.html', { 'overall_list' : overall_list })
+    return render(request, 'lab_queue/newqueue.html', { 'form' : form })
 
 @login_required
 def account(request):
