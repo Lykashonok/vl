@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import ugettext_lazy as _
-from .models import Profile, UserInQueue
+from .models import Profile, UserInQueue, Queue
 
 class UserRegisterForm(UserCreationForm):
     first_name = forms.CharField(required = True)
@@ -26,6 +26,7 @@ class UserRegisterForm(UserCreationForm):
 TYPE_CHOISES_RU = [
     ('student', 'Студент'),
     ('teacher', 'Преподаватель'),
+    ('headman', 'Староста'),
 ]
 class ProfileForm(forms.ModelForm):
     user_type = forms.ChoiceField(
@@ -40,11 +41,21 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ['user_group', 'user_type']
 
+class NewQueueForm(forms.ModelForm):
+    class Meta:
+        model = Queue
+        fields = ['queue_title', 'queue_group', 'queue_info']
+
 class QueueEnterForm(forms.ModelForm):
     # additional_info = forms.CharField()
     class Meta:
         model = UserInQueue
         fields = ['uiq_info']
 
-class OnePropertyForm(forms.Form):
+class ChangeQueueIndexForm(forms.Form):
     queue_swap = forms.CharField(required = False)
+    queue_move_up = forms.CharField(required = False)
+    queue_move_down = forms.CharField(required = False)
+
+class ChangeInfoForm(forms.Form):
+    uiq_info = forms.CharField(required = False)

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 # Create your models here.
 class Queue(models.Model):
@@ -7,7 +8,7 @@ class Queue(models.Model):
     queue_title = models.CharField('название очереди', max_length = 100)
     queue_group = models.IntegerField('номер группы')
     queue_info = models.TextField('дополнительная информация')
-    queue_create_date = models.DateTimeField('дата создания')
+    queue_create_date = models.DateTimeField('дата создания', auto_now_add = True, blank = True)
     
     def __str__(self):
         return f'{self.queue_id} {self.queue_title}'
@@ -37,6 +38,7 @@ class UserInQueue(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    #teacher, headman, student
     user_type = models.CharField('тип пользователя', max_length = 20, blank=True)
     user_group = models.IntegerField('группа пользователя', blank=True)
 

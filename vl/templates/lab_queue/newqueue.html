@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %} Создание новой очереди {% endblock %}
+
+{% block content %}
+
+    <div>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <legend>Создание новой очереди</legend>
+            <fieldset>
+                {{ form|crispy }}
+            </fieldset>
+            <div>
+                <button type="submit">Создать</button>
+            </div>
+        </form>
+        <div>
+            <small>
+                Ещё не зарегистрированы ? <a href="{% url 'lab_queue:register' %}">Зарегистрироваться</a>
+            </small>
+        </div>
+    </div>
+
+{% endblock %}

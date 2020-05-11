@@ -3,7 +3,7 @@
 {% block title %} Список всех очередей {% endblock %}
 
 {% block content %}
-
+    <a href="{% url 'lab_queue:newqueue' %}">Новая очередь</a><br>
     {% if overall_list %}
         {% for item in overall_list %}
             <a href="{% url 'lab_queue:detail' item.queue_id%}">{{item.queue_title}}</a><br>
@@ -11,5 +11,4 @@
     {% else %}
         В данный момент очередей нет
     {% endif %}
-
 {% endblock %}

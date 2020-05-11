@@ -2,9 +2,11 @@
 
 {% load crispy_forms_tags %}
 {% block title %}{{queue.queue_title}}{% endblock %}
-
 {% block content %}
-
+    <form action="">
+        {% csrf_token %}
+        <button type="submit">↻</button>
+    </form>
     {{queue}}
     {% if users %}
         <br>
@@ -14,8 +16,17 @@
                     {{user_in_queue.uiq_index}}.
                 </div>
                 <div>
-                    {{user_in_queue.uiq_first_name}} {{user_in_queue.uiq_second_name}} {{user_in_queue.uiq_group}} <br>
+                    {{user_in_queue.uiq_first_name}} {{user_in_queue.uiq_second_name}} {{user_in_queue.uiq_group}}<br>
                     {{user_in_queue.uiq_info}}
+                    {% if user.profile.user_type == 'headman' %}
+                        <form action='' method='POST'>
+                            {% csrf_token %}
+                            <div>
+                                <button type='submit' name='queue_move_up' value="{{user_in_queue.uiq_user_id}}">▲</button>
+                                <button type='submit' name='queue_move_down' value="{{user_in_queue.uiq_user_id}}">▼</button>
+                            </div>
+                        </form>
+                    {% endif %}
                     {% if user_in_queue.uiq_want_to_swap and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
                         <h5>Вы готовы поменятся местами</h5>
                     {% endif%}
@@ -30,7 +41,10 @@
                     <form action='' method='POST'>
                         {% csrf_token %}
                         <button type='submit' name='queue_swap_state'>Хочу махнуться местами</button>
-                        <input type="text" name="queue_change_info_text">
+                    </form>
+                    <form action='' method='POST'>
+                        {% csrf_token %}
+                        <input type="text" name="uiq_info">
                         <button type='submit' name='queue_change_info'>Поменять доп. инфу</button>
                     </form>
                 {% endif %}
