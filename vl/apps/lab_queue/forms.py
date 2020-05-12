@@ -46,6 +46,14 @@ class NewQueueForm(forms.ModelForm):
         model = Queue
         fields = ['queue_title', 'queue_group', 'queue_info']
 
+# class EditQueueForm(forms.ModelForm):
+#     queue_title = forms.CharField(label = 'Название очереди', required = True)
+#     queue_group = forms.IntegerField(label = 'Целевая группа',required = True)
+#     queue_info = forms.CharField(label = 'Дополнительная информация',required = False)
+#     class Meta:
+#         model = Queue
+#         fields = ['queue_title', 'queue_group', 'queue_info']
+
 class QueueEnterForm(forms.ModelForm):
     # additional_info = forms.CharField()
     class Meta:

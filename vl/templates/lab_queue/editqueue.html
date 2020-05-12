@@ -2,19 +2,19 @@
 
 {% load crispy_forms_tags %}
 
-{% block title %} Создание новой очереди {% endblock %}
+{% block title %} Изменение текущей очереди {% endblock %}
 
 {% block content %}
 
     <div>
         <form action="" method="POST">
             {% csrf_token %}
-            <legend>Создание новой очереди</legend>
+            <legend>Изменение очереди</legend>
             <fieldset>
                 {{ form|crispy }}
             </fieldset>
             <div>
-                <button class="button_main_empty" type="submit">Создать</button>
+                <button class="button_main_empty" type="submit">Изменить</button>
             </div>
         </form>
     </div>
