@@ -3,73 +3,93 @@
 {% load crispy_forms_tags %}
 {% block title %}{{queue.queue_title}}{% endblock %}
 {% block content %}
-    <script type="text/javascript">
-        function submitFunction() {
-            let user_choise = window.confirm('Действительно хочешь удалить очередь?');
-
-        }
-    </script>
-    <form action="">
-        {% csrf_token %}
-        <button type="submit">↻</button>
-    </form>
-    {{queue}}
+    <div>
+        <div style="float: left;">
+            <h1>{{queue.queue_title}}, {{queue.queue_group}}</h1>
+        </div>
+        <div style="float: right; margin: 10px">
+            <form action="">
+                {% csrf_token %}
+                <button class="button_main_empty" type="submit">↻</button>
+            </form>
+        </div>
+    </div>
     {% if users %}
-        <br>
-        {% for user_in_queue in users %}
-            <div>
-                <div>
-                    {{user_in_queue.uiq_index}}.
-                </div>
-                <div>
-                    {{user_in_queue.uiq_first_name}} {{user_in_queue.uiq_second_name}} {{user_in_queue.uiq_group}}<br>
-                    {{user_in_queue.uiq_info}}
-                    {% if user.profile.user_type == 'headman' %}
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Имя</th>
+                <th scope="col">Фамилия</th>
+                <th scope="col">Группа</th>
+                <th scope="col">Доп. информация</th>
+                <th scope="col">Управление</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for user_in_queue in users %}
+                <tr>
+                    <th scope="row">{{user_in_queue.uiq_index}}</th>
+                    <td>{{user_in_queue.uiq_first_name}}</td>
+                    <td>{{user_in_queue.uiq_second_name}}</td>
+                    <td class="{% if user_in_queue.uiq_group != queue.queue_group %}wrong_group{% endif %}">{{user_in_queue.uiq_group}}</td>
+                    <td>{{user_in_queue.uiq_info}}</td>
+                    <td>
+                        {% if user.profile.user_type == 'headman' %}
                         <form action='' method='POST'>
                             {% csrf_token %}
                             <div>
-                                <button type='submit' name='queue_move_up' value="{{user_in_queue.uiq_user_id}}">▲</button>
-                                <button type='submit' name='queue_move_down' value="{{user_in_queue.uiq_user_id}}">▼</button>
+                                <button class="button_main_empty" type='submit' name='queue_move_up' value="{{user_in_queue.uiq_user_id}}">▲</button>
+                                <button class="button_main_empty" type='submit' name='queue_move_down' value="{{user_in_queue.uiq_user_id}}">▼</button>
                             </div>
                         </form>
-                    {% endif %}
-                    {% if user_in_queue.uiq_want_to_swap and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
-                        <h5>Вы готовы поменятся местами</h5>
-                    {% endif%}
-                    {% if user_in_queue.uiq_want_to_swap and user_in_queue.uiq_user_id != current_user.uiq_user_id %}
-                        <form action='' method='POST'>
-                            {% csrf_token %}
-                            <button type='submit' name='queue_swap' value="{{user_in_queue.uiq_user_id}}">Махнуться местами</button>
-                        </form>
-                    {% endif %}
-                </div>
-                {% if current_user and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
-                    <form action='' method='POST'>
-                        {% csrf_token %}
-                        <button type='submit' name='queue_swap_state'>Хочу махнуться местами</button>
-                    </form>
-                    <form action='' method='POST'>
-                        {% csrf_token %}
-                        <input type="text" name="uiq_info">
-                        <button type='submit' name='queue_change_info'>Поменять доп. инфу</button>
-                    </form>
-                {% endif %}
-            </div>
-        {% endfor %}
-        <br>
+                        {% endif %}
+                        {% if user_in_queue.uiq_want_to_swap and user_in_queue.uiq_user_id != current_user.uiq_user_id and user.id == current_user.uiq_user_id%}
+                            <form action='' method='POST'>
+                                {% csrf_token %}
+                                <button class="button_main_empty" type='submit' name='queue_swap' value="{{user_in_queue.uiq_user_id}}">Махнуться местами</button>
+                            </form>
+                        {% endif %}
+                        {% if current_user and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
+                            <form action='' method='POST'>
+                                {% csrf_token %}
+                                <button class="button_main_empty" type='submit' name='queue_swap_state'>
+                                    {% if current_user.uiq_want_to_swap %}
+                                        Не хочу меняться местами
+                                    {% else %}
+                                        Хочу поменяться местами
+                                    {% endif %}
+                                </button>
+                            </form>
+                        {% endif %}
+                        {% if user_in_queue.uiq_want_to_swap and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
+                            <small>Вы готовы поменятся местами</small>
+                        {% endif%}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+          </table>
+            {% if current_user and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
+                <form action='' method='POST'>
+                    {% csrf_token %}
+                    <input type="text" name="uiq_info">
+                    <button class="button_main_empty" type='submit' name='queue_change_info'>Поменять доп. инфу</button>
+                </form>
+            {% endif %}
     {% else %}
         <br>Эта очередь пустая<br>
     {% endif %}
     {% if user.id != current_user.uiq_user_id %}
         <form action='' method='POST'>
             {% csrf_token %}
-            <button type='submit' name='queue_enter'>Запрыгнуть в очередь</button>
+            <button class="button_main_empty" type='submit' name='queue_enter'>Запрыгнуть в очередь</button>
             {{ queue_enter_form|crispy }}
         </form>
     {% else %}
         <form action='' method='POST'>
             {% csrf_token %}
-            <button type='submit' name='queue_exit'>Выпрыгнуть</button>
+            <button class="button_main_empty" type='submit' name='queue_exit'>Выпрыгнуть</button>
         </form>
     {% endif %}
     {% if user.profile.user_type == 'headman' %}
@@ -77,11 +97,11 @@
             {% csrf_token %}
             <div>
                 {% if not queue_delete_start %}
-                    <button type='submit' name='queue_delete_start'>Удалить очередь</button>
+                    <button class="button_main_empty" type='submit' name='queue_delete_start'>Удалить очередь</button>
                 {% else %}
                     <p>Уверены?</p>
-                    <button type='submit' name='queue_delete_confirm_true' value="{{queue.queue_id}}">Да</button>
-                    <button type='submit' name='queue_delete_confirm_false'>Нет</button>
+                    <button class="button_main_empty" type='submit' name='queue_delete_confirm_true' value="{{queue.queue_id}}">Да</button>
+                    <button class="button_main_empty" type='submit' name='queue_delete_confirm_false'>Нет</button>
                 {% endif %}
             </div>
         </form>

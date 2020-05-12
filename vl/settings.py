@@ -27,7 +27,10 @@ SECRET_KEY = 'mz3w7q5p*yu-bfg5x4+^q8syyp^7uw$&1_)xe5nwim_&ktmhn3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['dembyvlad.pythonanywhere.com']
+ALLOWED_HOSTS = [
+    'dembyvlad.pythonanywhere.com',
+    'localhost'
+]
 
 
 # Application definition
@@ -125,9 +128,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
+
+
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static/')
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(PROJECT_ROOT, 'static/lab_queue'),
+]
 
 MEDIA_ROOT = '/home/dembyvlad/vl/media'
 MEDIA_URL = '/media/'

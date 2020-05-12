@@ -3,11 +3,29 @@
 {% block title %} Список всех очередей {% endblock %}
 
 {% block content %}
-    <a href="{% url 'lab_queue:newqueue' %}">Новая очередь</a><br>
+    <!-- <a href="{% url 'lab_queue:newqueue' %}">Новая очередь</a> -->
     {% if overall_list %}
-        {% for item in overall_list %}
-            <a href="{% url 'lab_queue:detail' item.queue_id%}">{{item.queue_title}}</a><br>
-        {% endfor %}
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Название</th>
+                    <th scope="col">Целевая группа</th>
+                    <th scope="col">Дата создания</th>
+                    <th scope="col">Доп. информация</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for item in overall_list %}
+                        <tr>
+                            <th scope="row"><a href="{% url 'lab_queue:detail' item.queue_id%}">{{item.queue_title}}</a><br></th>
+                            <td>{{item.queue_group}}</td>
+                            <td>{{item.queue_create_date}}</td>
+                            <td>{{item.queue_info}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        
     {% else %}
         В данный момент очередей нет
     {% endif %}
