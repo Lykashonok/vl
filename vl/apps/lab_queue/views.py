@@ -145,7 +145,7 @@ def detail(request, queue_id):
         #     return render(request, 'lab_queue/editqueue.html', context)
 
     # except:
-        raise Http404("Не получилось найти очередь. Скорее всего её уже удалили")
+        # raise Http404("Не получилось найти очередь. Скорее всего её уже удалили")
     queue = Queue.objects.get( queue_id = queue_id )
     users = UserInQueue.objects.filter( uiq_queue_id = queue_id ).order_by('uiq_index')
     current_user = list(filter(lambda item: item.uiq_user_id == request.user.id, users))
