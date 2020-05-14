@@ -9,11 +9,12 @@
             <p>{{queue.queue_info}}</p>
         </div>
         <div style="float: right; margin: 10px">
-            <!-- {% if user.profile.user_type == 'headman' %}
-                <form action="" method="POST"> {% csrf_token %}
-                    <button class="button_main_empty" type="submit" name='queue_edit' value="{{queue.queue_id}}">✎</button>
+            {% if user.profile.user_type == 'headman' and user.profile.user_group == queue.queue_group %}
+                <form action="{% url 'lab_queue:editqueue' queue.queue_id %}"> {% csrf_token %}
+                    <button class="button_main_empty" type="submit">✎</button>
                 </form>
-            {% endif %} -->
+            {% endif %}
+            </form>
             <form action=""> {% csrf_token %}
                 <button class="button_main_empty" type="submit">↻</button>
             </form>
@@ -79,19 +80,35 @@
                 </form>
             {% endif %}
     {% else %}
-        <br>Эта очередь пустая<br>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Фамилия</th>
+            <th scope="col">Группа</th>
+            <th scope="col">Доп. информация</th>
+            <th scope="col">Управление</th>
+          </tr>
+        </thead>
+    </table>
+    <h3>Эта очередь пустая</h3>
     {% endif %}
     {% if user.id != current_user.uiq_user_id %}
-        <form action='' method='POST'> {% csrf_token %}
-            <button class="button_main_empty" type='submit' name='queue_enter'>Запрыгнуть в очередь</button>
-            {{ queue_enter_form|crispy }}
-        </form>
+        {% if user_can_enter %}
+            <form action='' method='POST'> {% csrf_token %}
+                <button class="button_main_empty" type='submit' name='queue_enter'>Запрыгнуть в очередь</button>
+                {{ queue_enter_form|crispy }}
+            </form>
+        {% else %}
+            <h3>Сейчас вы не можете войти, очередь будет доступна только через {{user_can_enter_remain}}</h3>
+        {% endif %}
     {% else %}
         <form action='' method='POST'> {% csrf_token %}
             <button class="button_main_empty" type='submit' name='queue_exit'>Выпрыгнуть</button>
         </form>
     {% endif %}
-    {% if user.profile.user_type == 'headman' %}
+    {% if user.profile.user_type == 'headman' and user.profile.user_group == queue.queue_group %}
         <form action='' method='POST'> {% csrf_token %}
             <div>
                 {% if not queue_delete_start %}

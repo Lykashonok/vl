@@ -9,6 +9,7 @@ class Queue(models.Model):
     queue_group = models.IntegerField('номер группы')
     queue_info = models.TextField('дополнительная информация')
     queue_create_date = models.DateTimeField('дата создания', auto_now_add = True, blank = True)
+    queue_enter_date = models.DateTimeField('дата и время открытия очереди', default= timezone.now(), blank = False)
     
     def __str__(self):
         return f'{self.queue_id} {self.queue_title}'

@@ -1,8 +1,13 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.translation import ugettext_lazy as _
 from .models import Profile, UserInQueue, Queue
+
+# from functools import partial
+# DateInput = partial(forms.DateInput, {'class': 'datepicker'})
+class DateInput(forms.DateInput):
+    input_type = 'time'
 
 class UserRegisterForm(UserCreationForm):
     first_name = forms.CharField(required = True)
@@ -30,29 +35,47 @@ TYPE_CHOISES_RU = [
 ]
 class ProfileForm(forms.ModelForm):
     user_type = forms.ChoiceField(
-        # label = _('Кто я?'),
+        label = _('Кто я?'),
         required = True,
         choices = TYPE_CHOISES_RU,
     )
     user_group = forms.IntegerField(
-        # label = _('Группа'),
+        label = _('Группа'),
+        help_text = _('В полной форме (85350?)')
     )
     class Meta:
         model = Profile
         fields = ['user_group', 'user_type']
 
 class NewQueueForm(forms.ModelForm):
+    queue_enter_date = forms.DateTimeField(
+        label = 'Дата и время открытия очереди', required = False,
+        widget = forms.DateTimeInput
+    )
     class Meta:
         model = Queue
-        fields = ['queue_title', 'queue_group', 'queue_info']
+        fields = ['queue_title', 'queue_group', 'queue_info', 'queue_enter_date']
 
-# class EditQueueForm(forms.ModelForm):
-#     queue_title = forms.CharField(label = 'Название очереди', required = True)
-#     queue_group = forms.IntegerField(label = 'Целевая группа',required = True)
-#     queue_info = forms.CharField(label = 'Дополнительная информация',required = False)
-#     class Meta:
-#         model = Queue
-#         fields = ['queue_title', 'queue_group', 'queue_info']
+class EditQueueForm(forms.ModelForm):
+    queue_title = forms.CharField(label = 'Название очереди', required = True)
+    queue_group = forms.IntegerField(label = 'Целевая группа',required = True)
+    queue_info = forms.CharField(label = 'Дополнительная информация',required = False)
+    queue_enter_date = forms.DateTimeField(
+        label = 'Дата и время открытия очереди', required = False,
+        widget = forms.DateTimeInput
+    )
+    class Meta:
+        model = Queue
+        fields = ['queue_title', 'queue_group', 'queue_info', 'queue_enter_date']
+
+class EditUserForm(UserChangeForm):
+    def __init__(self, *args, **kwargs):
+        super(EditUserForm, self).__init__(*args, **kwargs)
+        del self.fields['password']
+
+    class Meta:
+        model = User
+        fields = ('username','first_name','last_name')
 
 class QueueEnterForm(forms.ModelForm):
     # additional_info = forms.CharField()

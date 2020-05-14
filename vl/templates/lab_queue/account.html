@@ -1,12 +1,21 @@
 {% extends 'base.html' %}
 
+{% load crispy_forms_tags %}
+
 {% block title %}{{user.username}}{% endblock %}
 
 {% block content %}
-
-    Имя: {{user.first_name}}<br>
-    Фамилия: {{user.last_name}}<br>
-    Группа: {{user.profile.user_group}}<br>
-    Тип: {{user.profile.user_type}}<br>
-
+    <div>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <legend>Это данные Вашего аккаунта, Вы можете их изменить</legend>
+            <fieldset>
+                {{ user_form|crispy }}
+                {{ profile_form|crispy }}
+            </fieldset>
+            <div>
+                <button class="button_main_empty" type="submit">Изменить</button>
+            </div>
+        </form>
+    </div>
 {% endblock %}
