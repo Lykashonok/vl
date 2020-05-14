@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Bootstrap standart settings -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'lab_queue/main.css' %}">
 
     <title>{% block title %} Очереди на лабки {% endblock title %}</title>
 </head>
@@ -53,7 +53,7 @@
                 <ul class="list-group">
                 <li class="list-group-item list-group-item-light">Псевдоним: {{user.username}}</li>
                 <li class="list-group-item list-group-item-light">Группа: {{user.profile.user_group}}</li>
-                <li class="list-group-item list-group-item-light">Тип: 
+                <li class="list-group-item list-group-item-light">Тип:
                     {% if user.profile.user_type == 'student' %}
                         студент
                     {% elif user.profile.user_type == 'headman' %}
