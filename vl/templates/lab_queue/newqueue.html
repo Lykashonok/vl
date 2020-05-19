@@ -5,18 +5,48 @@
 {% block title %} Создание новой очереди {% endblock %}
 
 {% block content %}
-
-    <div>
-        <form action="" method="POST">
-            {% csrf_token %}
+    <div class="col-md-8">
+        <form action="" method="POST"> {% csrf_token %}
             <legend>Создание новой очереди</legend>
             <fieldset>
                 {{ form|crispy }}
+                <p>Приоритеты</p> <small>(по ним можно сортировать стоящих в очереди)</small>
+                <div style="display: flex; margin-top: 5px; margin-bottom: 5px;">
+                    <input type="number" name="queue_priorities_number" placeholder="количество приоритетов" style="margin-right: 10px; width: auto;">
+                    <button class="button_main_empty" name="queue_priorities_number_set" type="submit" value="True">Изменить</button>
+                </div>
+                {{priorities.management_form}} 
+                {% for priority in priorities %}
+                    {{ priority|crispy }}
+                {% endfor%}
             </fieldset>
-            <div>
+            <div style="padding-bottom: 5%;">
                 <button class="button_main_empty" type="submit">Создать</button>
             </div>
         </form>
     </div>
-
+    {% if user.username != '' %}
+    <div class="col-md-4">
+        <div class="content-section">
+        <h3>{{user.first_name}} {{user.last_name}}</h3>
+        <p class='text-muted'>Краткая информация о профиле.
+            <ul class="list-group">
+            <li class="list-group-item list-group-item-light">Псевдоним: {{user.username}}</li>
+            <li class="list-group-item list-group-item-light">Группа: {{user.profile.user_group}}</li>
+            <li class="list-group-item list-group-item-light">Тип:
+                {% if user.profile.user_type == 'student' %}
+                    студент
+                {% elif user.profile.user_type == 'headman' %}
+                    староста
+                {% elif user.profile.user_type == 'teacher' %}
+                    учитель
+                {% else %}
+                    неизвестно
+                {% endif %}
+            </li>
+            </ul>
+        </p>
+        </div>
+    </div>
+    {% endif %}
 {% endblock %}

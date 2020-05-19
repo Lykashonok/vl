@@ -37,42 +37,17 @@
         </nav>
     </header>
     <main role="main" class="container">
-        <div class="row">
-        <div class="col-md-8">
-            {% if messages %}
+        {% if messages %}
                 {% for message in messages %}
                     <div class="alert-{{ message.tags }}">
                         {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
+        <div class="row">
             {% block content %}{% endblock %}
         </div>
-        {% if user.username != '' %}
-        <div class="col-md-4">
-            <div class="content-section">
-            <h3>{{user.first_name}} {{user.last_name}}</h3>
-            <p class='text-muted'>Краткая информация о профиле.
-                <ul class="list-group">
-                <li class="list-group-item list-group-item-light">Псевдоним: {{user.username}}</li>
-                <li class="list-group-item list-group-item-light">Группа: {{user.profile.user_group}}</li>
-                <li class="list-group-item list-group-item-light">Тип:
-                    {% if user.profile.user_type == 'student' %}
-                        студент
-                    {% elif user.profile.user_type == 'headman' %}
-                        староста
-                    {% elif user.profile.user_type == 'teacher' %}
-                        учитель
-                    {% else %}
-                        неизвестно
-                    {% endif %}
-                </li>
-                </ul>
-            </p>
-            </div>
-        </div>
-        {% endif %}
-        </div>
+        
     </main>
 
     <!-- Optional JavaScript -->

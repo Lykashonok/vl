@@ -103,3 +103,17 @@ body {
 .wrong_group {
   background-color: indianred;
 }
+
+.sort_by_enter_time {
+  opacity: 0.3;
+}
+
+.nobull {
+  list-style-type: none;
+ }
+ 
+ .tag_priority {
+  border-radius: 10px;
+  border: 2px solid lightblue;
+  padding: 3px;
+ }
