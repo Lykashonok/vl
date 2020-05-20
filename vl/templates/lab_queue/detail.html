@@ -143,33 +143,37 @@
                 <div class="row">
                     <div class="col-sm-6">
                         <div style="align-self: center;">
-                            {% if user.id != current_user.uiq_user_id and user.profile.user_type != 'headman' %}
-                                <p class='text-muted'>Войти в очередь.
-                                    {% if user_can_enter %}
-                                        <form action='' method='POST'> {% csrf_token %}
-                                            <button class="button_main_empty" type='submit' title="Перейти на последнее место в очереди" name='queue_enter'>Запрыгнуть в очередь</button>
-                                            <fieldset>
-                                                {{ queue_enter_form|crispy }}
-                                                {{ priorities_form|crispy }}
-                                            </fieldset>
-                                        </form>
-                                    {% else %}
-                                        <h3>Сейчас вы не можете войти, очередь будет доступна только через {{user_can_enter_remain}}</h3>
-                                    {% endif %}
-                                </p>
+                            {% if user.profile.user_type != 'teacher' %}
+                                {% if user.id != current_user.uiq_user_id %}
+                                    <p class='text-muted'>Войти в очередь.
+                                        {% if user_can_enter %}
+                                            <form action='' method='POST'> {% csrf_token %}
+                                                <button class="button_main_empty" type='submit' title="Перейти на последнее место в очереди" name='queue_enter'>Запрыгнуть в очередь</button>
+                                                <fieldset>
+                                                    {{ queue_enter_form|crispy }}
+                                                    {{ priorities_form|crispy }}
+                                                </fieldset>
+                                            </form>
+                                        {% else %}
+                                            <h3>Сейчас вы не можете войти, очередь будет доступна только через {{user_can_enter_remain}}</h3>
+                                        {% endif %}
+                                    </p>
+                                {% else %}
+                                    <p class='text-muted'>Изменить свою информацию.
+                                        {% if current_user %}
+                                            <form action='' method='POST'> {% csrf_token %}
+                                                <button class="button_main_empty" style="justify-self: center;" type='submit' title="Изменить информацию о себе в очереди" name='queue_change_info'>изменить информацию</button>
+                                                <input type="text" name="uiq_info" style="margin-top: 10px; margin-bottom: 10px; width: 80%;">
+                                                <fieldset>
+                                                    {{ queue_enter_form|crispy }}
+                                                    {{ priorities_form|crispy }}
+                                                </fieldset>
+                                            </form>
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
                             {% else %}
-                                <p class='text-muted'>Изменить свою информацию.
-                                    {% if current_user %}
-                                        <form action='' method='POST'> {% csrf_token %}
-                                            <button class="button_main_empty" style="justify-self: center;" type='submit' title="Изменить информацию о себе в очереди" name='queue_change_info'>изменить информацию</button>
-                                            <input type="text" name="uiq_info" style="margin-top: 10px; margin-bottom: 10px; width: 80%;">
-                                            <fieldset>
-                                                {{ queue_enter_form|crispy }}
-                                                {{ priorities_form|crispy }}
-                                            </fieldset>
-                                        </form>
-                                    {% endif %}
-                                </p>
+                                Вы преподаватель, вам это не нужно
                             {% endif %}
                         </div>
                     </div>
