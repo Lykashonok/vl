@@ -27,10 +27,7 @@ SECRET_KEY = 'mz3w7q5p*yu-bfg5x4+^q8syyp^7uw$&1_)xe5nwim_&ktmhn3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'dembyvlad.pythonanywhere.com',
-    'localhost'
-]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -141,6 +138,10 @@ STATICFILES_DIRS = [
     os.path.join(PROJECT_ROOT, 'static/lab_queue'),
     os.path.join(PROJECT_ROOT, 'static/gijgo/'),
 ]
+
+import dj_database_url
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
 
 MEDIA_ROOT = '/home/dembyvlad/vl/media'
 MEDIA_URL = '/media/'
