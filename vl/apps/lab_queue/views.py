@@ -236,13 +236,14 @@ def detail(request, queue_id):
         elif 'queue_message_send' in request.POST:
             try:
                 text = request.POST.get('queue_message_send')
+                if not text: raise
                 message_to_send = Message(
                     message_chat_id = chat, 
                     message_text = text,
                     message_user_id = request.user.id
                 )
                 message_to_send.save()
-                messages.success(request, f'{request.user.first_name}, Вы отправили сообщение.')
+                # messages.success(request, f'{request.user.first_name}, Вы отправили сообщение.')
             except:
                 messages.error(request, f'{request.user.first_name}, Вы не отправили сообщение.')
     # except:
