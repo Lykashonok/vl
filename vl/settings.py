@@ -135,10 +135,9 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static/')
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = [
-#     os.path.join(PROJECT_ROOT, 'static/lab_queue'),
-#     os.path.join(PROJECT_ROOT, 'static/gijgo/'),
-# ]
+STATICFILES_DIRS = [
+    os.path.join(PROJECT_ROOT, 'static/gijgo/'),
+]
 
 import dj_database_url
 db_from_env = dj_database_url.config()

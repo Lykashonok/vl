@@ -124,8 +124,8 @@
                             <h1>Чат очереди</h1>
                             <div class="chat-container">
                                 {% for message in chat_messages %}
-                                    <div class="message">
-                                        <div>{{message.user.first_name}} {{message.user.last_name}}</div>
+                                    <div class="message shadow {% if message.user.type == 'teacher' %} message-teacher {% elif message.user.id == user.id %} message-you {% else %} message-other {% endif %}">
+                                        <div >{{message.user.first_name}} {{message.user.last_name}}</div>
                                         <div class="datetime">{{message.date}}</div>
                                         <p>{{message.text}}</p>
                                     </div>
@@ -133,7 +133,7 @@
                             </div>
                             <form class="send-message-form" action="" method="POST"> {% csrf_token %}
                                 <input type="text" name="queue_message_send" placeholder="Enter чтобы отправить">
-                                <button type="submit">Отправить</button>
+                                <button class="button_main_empty" type="submit">Отправить</button>
                             </form>
                         </div>  
                     </div>
@@ -143,7 +143,7 @@
                 <div class="row">
                     <div class="col-sm-6">
                         <div style="align-self: center;">
-                            {% if user.id != current_user.uiq_user_id %}
+                            {% if user.id != current_user.uiq_user_id and user.profile.user_type != 'headman' %}
                                 <p class='text-muted'>Войти в очередь.
                                     {% if user_can_enter %}
                                         <form action='' method='POST'> {% csrf_token %}
@@ -161,8 +161,8 @@
                                 <p class='text-muted'>Изменить свою информацию.
                                     {% if current_user %}
                                         <form action='' method='POST'> {% csrf_token %}
-                                            <button class="button_main_empty" style="justify-self: center" type='submit' title="Изменить информацию о себе в очереди" name='queue_change_info'>изменить информацию</button>
-                                            <input type="text" name="uiq_info" style="margin-top: 10px; margin-bottom: 10px;">
+                                            <button class="button_main_empty" style="justify-self: center;" type='submit' title="Изменить информацию о себе в очереди" name='queue_change_info'>изменить информацию</button>
+                                            <input type="text" name="uiq_info" style="margin-top: 10px; margin-bottom: 10px; width: 80%;">
                                             <fieldset>
                                                 {{ queue_enter_form|crispy }}
                                                 {{ priorities_form|crispy }}

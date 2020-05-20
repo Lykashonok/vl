@@ -127,6 +127,21 @@ body {
 .user_in_queue {
   background-color: lightyellow;
 }
+.message-teacher {
+  background-color: lightsalmon;
+  margin: 10px;
+  border-radius: 5px;
+}
+.message-you {
+  background-color: lightyellow;
+  margin: 10px;
+  border-radius: 5px;
+}
+.message-other {
+  background-color: lightgray;
+  margin: 10px;
+  border-radius: 5px;
+}
 
 .container-char {
   width: 400px;
