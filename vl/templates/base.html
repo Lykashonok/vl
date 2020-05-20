@@ -22,7 +22,9 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-nav mr-auto">
-                    <a class="nav-item nav-link" href="{% url 'lab_queue:newqueue' %}">Новая очередь</a>
+                    {% if user.profile.type != 'student' %}
+                        <a class="nav-item nav-link" href="{% url 'lab_queue:newqueue' %}">Новая очередь</a>
+                    {% endif %}
                 </div>
                 <div class="navbar-nav">
                     {% if user.is_authenticated %}
