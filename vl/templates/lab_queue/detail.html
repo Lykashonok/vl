@@ -3,14 +3,14 @@
 {% load crispy_forms_tags %}
 {% block title %}{{queue.queue_title}}{% endblock %}
 {% block content %}
-    <div class="col-md-8">
+    <div class="col-sm-7 shadow content-section" style="background-color: white;">
         <div>
             <div style="float: left;">
                 <h1>{{queue.queue_title}}, {{queue.queue_group}}</h1>
                 <p>{{queue.queue_info}}</p>
             </div>
             <div style="float: right; margin: 10px">
-                {% if user.profile.user_type == 'headman' and user.profile.user_group == queue.queue_group %}
+                {% if user.profile.user_type == 'headman' or user.profile.user_type == 'teacher' and user.profile.user_group == queue.queue_group %}
                     <form action="{% url 'lab_queue:editqueue' queue.queue_id %}"> {% csrf_token %}
                         <button class="button_main_empty" title="Изменить описание очереди" type="submit">✎</button>
                     </form>
@@ -35,7 +35,7 @@
                 </thead>
                 <tbody>
                     {% for user_in_queue in users %}
-                    <tr>
+                    <tr class="{% if user_in_queue.uiq_user_id == user.id %}user_in_queue{% endif %}">
                         <th scope="row">{{user_in_queue.uiq_index}}</th>
                         <td>{{user_in_queue.uiq_first_name}}</td>
                         <td>{{user_in_queue.uiq_second_name}}</td>
@@ -47,12 +47,12 @@
                             {{user_in_queue.uiq_info}}
                         </td>
                         <td>
-                            {% if user.profile.user_type == 'headman' %}
+                            {% if user.profile.user_type == 'headman' or user.profile.user_type == 'teacher' %}
                             <form action='' method='POST'>{% csrf_token %}
                                 <div>
                                     <button class="button_main_empty" type='submit' title="Передвинуть вверх по очереди" name='queue_move_up' value="{{user_in_queue.uiq_user_id}}">▲</button>
                                     <button class="button_main_empty" type='submit' title="Передвинуть вниз по очереди" name='queue_move_down' value="{{user_in_queue.uiq_user_id}}">▼</button>
-                                    <button class="button_main_empty" type='submit' title="Выкинуть из очереди" name='queue_move_down' value="{{user_in_queue.uiq_user_id}}">✖</button>
+                                    <button class="button_main_empty" type='submit' title="Выкинуть из очереди" name='queue_user_delete' value="{{user_in_queue.uiq_user_id}}">✖</button>
                                 </div>
                             </form>
                             {% endif %}
@@ -80,12 +80,6 @@
                     {% endfor %}
                 </tbody>
                 </table>
-                {% if current_user and user_in_queue.uiq_user_id == current_user.uiq_user_id %}
-                    <form action='' method='POST'> {% csrf_token %}
-                        <input type="text" name="uiq_info">
-                        <button class="button_main_empty" type='submit' name='queue_change_info'>Поменять доп. инфу</button>
-                    </form>
-                {% endif %}
         {% else %}
         <table class="table">
             <thead>
@@ -101,22 +95,12 @@
         </table>
         <h3>Эта очередь пустая</h3>
         {% endif %}
-        {% if user.id != current_user.uiq_user_id %}
-            {% if user_can_enter %}
-                <form action='' method='POST'> {% csrf_token %}
-                    <button class="button_main_empty" type='submit' title="Перейти на последнее место в очереди" name='queue_enter'>Запрыгнуть в очередь</button>
-                    {{ queue_enter_form|crispy }}
-                    {{ priorities_form }}
-                </form>
-            {% else %}
-                <h3>Сейчас вы не можете войти, очередь будет доступна только через {{user_can_enter_remain}}</h3>
-            {% endif %}
-        {% else %}
+        {% if user.id == current_user.uiq_user_id %}
             <form action='' method='POST'> {% csrf_token %}
                 <button class="button_main_empty" type='submit' title="Выйти из очереди" name='queue_exit'>Выпрыгнуть</button>
             </form>
         {% endif %}
-        {% if user.profile.user_type == 'headman' and user.profile.user_group == queue.queue_group %}
+        {% if user.profile.user_type == 'headman' or user.profile.user_type == 'teacher' and user.profile.user_group == queue.queue_group %}
             <form action='' method='POST'> {% csrf_token %}
                 <div>
                     {% if not queue_delete_start %}
@@ -130,63 +114,104 @@
             </form>
         {% endif %}
     </div>
-
-    {% if user.username != '' %}
-    <div class="col-md-4">
-        <div class="content-section">
-        <h3>{{user.first_name}} {{user.last_name}}</h3>
-        <p class='text-muted'>Краткая информация о профиле.
-            <ul class="list-group">
-            <li class="list-group-item list-group-item-light">Псевдоним: {{user.username}}</li>
-            <li class="list-group-item list-group-item-light">Группа: {{user.profile.user_group}}</li>
-            <li class="list-group-item list-group-item-light">Тип:
-                {% if user.profile.user_type == 'student' %}
-                    студент
-                {% elif user.profile.user_type == 'headman' %}
-                    староста
-                {% elif user.profile.user_type == 'teacher' %}
-                    учитель
-                {% else %}
-                    неизвестно
-                {% endif %}
-            </li>
-            </ul>
-        </p>
-        {% if queue.queue_priorities%}
-        <p class='text-muted'> Порядок приоритетов
-            <ul class="list-group">
-                {% if user.profile.user_type == 'teacher' or user.profile.user_type == 'headman' %}
-                    <form action="" method="POST" style="align-self: center; padding-bottom: 10px;"> {% csrf_token %}
-                        <button class="button_main_empty" type="submit" name="sort_by_enter_time_change" id="sort_by_enter_time_change" title="Изменить принцип стортировки">
-                            {% if queue.queue_sort_by_enter_time %}
-                                Сортировать по приоритетам
+    <div class="col-sm-5">
+        <div class="row container">
+            {% if user.username != '' %}
+            <div class="content-section shadow container">
+                <div class="row">
+                    <div class="col-sm">
+                        <div class="container-chat">
+                            <h1>Чат очереди</h1>
+                            <div class="chat-container">
+                                {% for message in chat_messages %}
+                                    <div class="message">
+                                        <div>{{message.user.first_name}} {{message.user.last_name}}</div>
+                                        <div class="datetime">{{message.date}}</div>
+                                        <p>{{message.text}}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <form class="send-message-form" action="" method="POST"> {% csrf_token %}
+                                <input type="text" name="queue_message_send" placeholder="Enter чтобы отправить">
+                                <button type="submit">Отправить</button>
+                            </form>
+                        </div>  
+                    </div>
+                </div>
+            </div>
+            <div class="content-section shadow container">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div style="align-self: center;">
+                            {% if user.id != current_user.uiq_user_id %}
+                                <p class='text-muted'>Войти в очередь.
+                                    {% if user_can_enter %}
+                                        <form action='' method='POST'> {% csrf_token %}
+                                            <button class="button_main_empty" type='submit' title="Перейти на последнее место в очереди" name='queue_enter'>Запрыгнуть в очередь</button>
+                                            <fieldset>
+                                                {{ queue_enter_form|crispy }}
+                                                {{ priorities_form|crispy }}
+                                            </fieldset>
+                                        </form>
+                                    {% else %}
+                                        <h3>Сейчас вы не можете войти, очередь будет доступна только через {{user_can_enter_remain}}</h3>
+                                    {% endif %}
+                                </p>
                             {% else %}
-                                Сортировать по времени вхождения
+                                <p class='text-muted'>Изменить свою информацию.
+                                    {% if current_user %}
+                                        <form action='' method='POST'> {% csrf_token %}
+                                            <button class="button_main_empty" style="justify-self: center" type='submit' title="Изменить информацию о себе в очереди" name='queue_change_info'>изменить информацию</button>
+                                            <input type="text" name="uiq_info" style="margin-top: 10px; margin-bottom: 10px;">
+                                            <fieldset>
+                                                {{ queue_enter_form|crispy }}
+                                                {{ priorities_form|crispy }}
+                                            </fieldset>
+                                        </form>
+                                    {% endif %}
+                                </p>
                             {% endif %}
-                        </button>
-                    </form>
-                {% endif%}
-                {% if not queue.queue_sort_by_enter_time %}
-                    {% for priority in queue_priorities %}
-                        <li class="list-group-item {% if queue.queue_sort_by_enter_time %}sort_by_enter_time disabled{% endif %}">
-                            {{priority}}  
-                            {% if user.profile.user_type == 'teacher' or user.profile.user_type == 'headman' %}
-                                <div style="float: right">
-                                    <form action="" method="POST"> {% csrf_token %}
-                                        <button class="button_main_empty" type='submit' title="Передвинуть приоритет вверх" name='queue_priority_move_up' value="{{priority}}">▲</button>
-                                        <button class="button_main_empty" type='submit' title="Передвинуть приоритет вниз" name='queue_priority_move_down' value="{{priority}}">▼</button>
+                        </div>
+                    </div>
+                    {% if queue.queue_priorities%}
+                    <div class="col-sm-6">
+                        <p class='text-muted'> Порядок приоритетов
+                            <ul class="list-group">
+                                {% if user.profile.user_type == 'teacher' or user.profile.user_type == 'headman' %}
+                                    <form action="" method="POST" style="align-self: center; padding-bottom: 10px;"> {% csrf_token %}
+                                        <button class="button_main_empty" type="submit" name="sort_by_enter_time_change" id="sort_by_enter_time_change" title="Изменить принцип стортировки">
+                                            {% if queue.queue_sort_by_enter_time %}
+                                                Сортировать по приоритетам
+                                            {% else %}
+                                                Сортировать по времени вхождения
+                                            {% endif %}
+                                        </button>
                                     </form>
-                                </div>
-                            {% endif%}
-                        </li>
-                    {% endfor%}
-                {% else %}
-                    <p style="align-self: center;">Отключено</p>
-                {% endif%}
-            </ul>
-        </p>
-        {% endif %}
+                                {% endif%}
+                                {% if not queue.queue_sort_by_enter_time %}
+                                    {% for priority in queue_priorities %}
+                                        <li class="list-group-item {% if queue.queue_sort_by_enter_time %}sort_by_enter_time disabled{% endif %}">
+                                            {{priority}}  
+                                            {% if user.profile.user_type == 'teacher' or user.profile.user_type == 'headman' %}
+                                                <div style="float: right">
+                                                    <form action="" method="POST"> {% csrf_token %}
+                                                        <button class="button_main_empty" type='submit' title="Передвинуть приоритет вверх" name='queue_priority_move_up' value="{{priority}}">▲</button>
+                                                        <button class="button_main_empty" type='submit' title="Передвинуть приоритет вниз" name='queue_priority_move_down' value="{{priority}}">▼</button>
+                                                    </form>
+                                                </div>
+                                            {% endif%}
+                                        </li>
+                                    {% endfor%}
+                                {% else %}
+                                    <p style="align-self: center;">Отключено</p>
+                                {% endif%}
+                            </ul>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
-    {% endif %}
 {% endblock %}

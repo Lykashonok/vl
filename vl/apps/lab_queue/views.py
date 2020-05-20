@@ -14,7 +14,7 @@ from .forms import UserRegisterForm, ProfileForm, QueueEnterForm, ChangeQueueInd
 from .other import swap_instances_index
 
 from django.contrib.auth.models import User
-from .models import Queue, UserInQueue, Profile
+from .models import Queue, UserInQueue, Profile, Message, Chat
 from django.contrib.auth.decorators import login_required
 
 
@@ -33,6 +33,13 @@ def detail(request, queue_id):
 
     queue_priorities = []
     for choice in queue.queue_priorities: queue_priorities.append(list(eval(choice))[1])
+
+    try:
+        chat = Chat.objects.get(chat_queue_id=queue_id)
+    except:
+        chat = Chat(chat_queue_id=queue)
+        chat.save()
+        
 
     user_can_enter = timezone.now() > queue.queue_enter_date
     user_can_enter_remain = queue.queue_enter_date - timezone.now()
@@ -120,12 +127,19 @@ def detail(request, queue_id):
             form = ChangeInfoForm(request.POST)
             if form.is_valid():
                 uiq_info = form.cleaned_data.get('uiq_info')
-                uiq_user = UserInQueue.objects.filter(
-                    uiq_user_id=request.user.id, uiq_queue_id=queue_id)[0]
+                uiq_user = UserInQueue.objects.filter(uiq_user_id=request.user.id, uiq_queue_id=queue_id)[0]
+
+                priorities, chosen_priorities_labels = [],[]
+                for choice in queue.queue_priorities: priorities.append(list(eval(choice)))
+                for chosen in request.POST.getlist('choices'):
+                    for item in priorities:
+                        if item[0] == chosen:
+                            chosen_priorities_labels.append(item[1])
+
+                uiq_user.uiq_priorities = chosen_priorities_labels
                 uiq_user.uiq_info = uiq_info
                 uiq_user.save()
-                messages.success(
-                    request, f'{request.user.first_name}, вы изменили дополнительную информацию.')
+                messages.success(request, f'{request.user.first_name}, вы изменили дополнительную информацию.')
         elif 'queue_move_up' in request.POST:
             form = ChangeQueueIndexForm(request.POST)
             if form.is_valid():
@@ -212,36 +226,77 @@ def detail(request, queue_id):
             else:
                 messages.error(
                     request, f'{request.user.first_name}, удалить не получилось, возможно, её уже нет!')
+        elif 'queue_user_delete' in request.POST:
+            try:
+                user_to_delete = UserInQueue.objects.get(uiq_queue_id = queue_id, uiq_user_id = request.POST.get('queue_user_delete'))
+                user_to_delete.delete()
+                messages.success(request, f'{request.user.first_name}, Вы успешно выкинули человека из очереди.')
+            except:
+                messages.error(request, f'{request.user.first_name}, удалить не получилось!')
+        elif 'queue_message_send' in request.POST:
+            try:
+                text = request.POST.get('queue_message_send')
+                message_to_send = Message(
+                    message_chat_id = chat, 
+                    message_text = text,
+                    message_user_id = request.user.id
+                )
+                message_to_send.save()
+                messages.success(request, f'{request.user.first_name}, Вы отправили сообщение.')
+            except:
+                messages.error(request, f'{request.user.first_name}, Вы не отправили сообщение.')
     # except:
         # raise Http404("Не получилось найти очередь. Скорее всего её уже удалили")
 
+    chat_messages = Message.objects.filter(message_chat_id = chat.chat_id).order_by('-message_date')
+    chat_messages_full = []
+    for message in chat_messages:
+        user = User.objects.get(id = message.message_user_id)
+        chat_messages_full.append({
+            "text" : message.message_text,
+            "date" : message.message_date,
+            "user" :  {
+                "first_name" : user.first_name,
+                "last_name" : user.last_name
+            }
+        })
+    chat_messages = chat_messages_full
+
     queue = Queue.objects.get(queue_id=queue_id)
-    # queue_with_priorities = []
-    # if queue.queue_sort_by_enter_time:
-    #     for priority in queue.sort
-    users = UserInQueue.objects.filter(
-        uiq_queue_id=queue_id).order_by('uiq_index')
-    current_user = list(
-        filter(lambda item: item.uiq_user_id == request.user.id, users))
+    users = list(UserInQueue.objects.filter(uiq_queue_id=queue_id).order_by('uiq_index'))
+    current_user = list(filter(lambda item: item.uiq_user_id == request.user.id, users))
+    if not queue.queue_sort_by_enter_time:
+        prioritized_users = []
+        for priority in queue_priorities:
+            for user in users:
+                if not user: continue
+                if priority in user.uiq_priorities:
+                    prioritized_users.append(user)
+                    users[users.index(user)] = None
+        for user in users:
+            if user: prioritized_users.append(user)
+        users = prioritized_users
 
     queue_priorities = []
     for choice in queue.queue_priorities: queue_priorities.append(list(eval(choice))[1])
+
+    choices = []
+    for choice in queue.queue_priorities: choices.append(list(eval(choice)))
+    priorities_form = PriorityChoiceForm(choices=choices)
 
     context = {
         'queue': queue,
         'users': users,
         'user_can_enter': user_can_enter,
         'user_can_enter_remain': user_can_enter_remain,
-        'queue_priorities' : queue_priorities
+        'queue_priorities' : queue_priorities,
+        'priorities_form': priorities_form,
+        'chat_messages' : chat_messages
     }
     if len(current_user) != 0:
         context.update({'current_user': current_user[0]})
     else:
-        choices = []
-        for choice in queue.queue_priorities: choices.append(list(eval(choice)))
-        
-        priorities_form = PriorityChoiceForm(choices=choices)
-        context.update({'queue_enter_form': queue_enter_form, 'priorities_form': priorities_form})
+        context.update({'queue_enter_form': queue_enter_form, })
 
     return render(request, 'lab_queue/detail.html', context)
 
@@ -276,15 +331,32 @@ def editqueue(request, queue_id):
     queue = Queue.objects.get(queue_id=queue_id)
     context = {'queue': queue}
     form = EditQueueForm()
+    priorities = formset_factory(PriorityForm, extra=1)
     if request.method == 'POST':
         form = EditQueueForm(request.POST)
-        if form.is_valid():
-            queue.queue_title = form.cleaned_data.get('queue_title')
-            queue.queue_group = form.cleaned_data.get('queue_group')
-            queue.queue_info = form.cleaned_data.get('queue_info')
-            queue.save()
-            messages.success(request, f'Описание очереди было изменено')
-        return redirect(f'../../{queue.queue_id}')
+        if 'queue_priorities_number_set' in request.POST:
+            raw_number = request.POST.get('queue_priorities_number')
+            number = int(raw_number) if raw_number else 1
+            priorities = formset_factory(PriorityForm, extra=number)
+        else:
+            priorities = priorities(request.POST, request.FILES)
+            if form.is_valid() and priorities.is_valid():
+
+                priorities_to_save = []
+                enter_date = form.cleaned_data.get('queue_enter_date') if form.cleaned_data.get('queue_enter_date') else timezone.now()
+                for item in priorities.forms:priorities_to_save.append(('priority'+str(priorities.forms.index(item)),item.cleaned_data.get('priority')))
+
+                uiq_users = UserInQueue.objects.filter(uiq_queue_id = queue_id)
+                if len(uiq_users) != 0: uiq_users.update(uiq_priorities = [])
+
+                queue.queue_priorities = priorities_to_save
+
+                queue.queue_title = form.cleaned_data.get('queue_title')
+                queue.queue_group = form.cleaned_data.get('queue_group')
+                queue.queue_info = form.cleaned_data.get('queue_info')
+                queue.save()
+                messages.success(request, f'Описание очереди было изменено')
+            return redirect(f'../../{queue.queue_id}')
     else:
         form = EditQueueForm(initial={
             'queue_title': queue.queue_title,
@@ -292,9 +364,49 @@ def editqueue(request, queue_id):
             'queue_info': queue.queue_info,
             'queue_enter_date': queue.queue_enter_date
         })
-    context.update({'form': form})
+    context.update({'form': form, 'priorities': priorities})
     return render(request, 'lab_queue/editqueue.html', context)
 
+@login_required
+def newqueue(request):
+    form = NewQueueForm(initial={'queue_title': 'qwe', 'queue_group': 123})
+    priorities = formset_factory(PriorityForm, extra=1)
+    if request.method == 'POST':
+        if 'queue_priorities_number_set' in request.POST:
+            raw_number = request.POST.get('queue_priorities_number')
+            number = int(raw_number) if raw_number else 1
+            priorities = formset_factory(PriorityForm, extra=number)
+        else:
+            form = NewQueueForm(request.POST)
+            priorities = priorities(request.POST, request.FILES)
+            if form.is_valid() and priorities.is_valid():
+                priorities_to_save = []
+                enter_date = form.cleaned_data.get('queue_enter_date') if form.cleaned_data.get('queue_enter_date') else timezone.now()
+                for item in priorities.forms:priorities_to_save.append(('priority'+str(priorities.forms.index(item)),item.cleaned_data.get('priority')))
+                queue_to_create = Queue(
+                    queue_title=form.cleaned_data.get('queue_title'),
+                    queue_group=form.cleaned_data.get('queue_group'),
+                    queue_info=form.cleaned_data.get('queue_info'),
+                    queue_enter_date=enter_date,
+                    queue_priorities=priorities_to_save
+                )
+
+                queue_to_create.save()
+
+                overall_list = Queue.objects.order_by('queue_create_date')
+                context = {'overall_list': overall_list}
+
+                messages.success(
+                    request, f'Очередь была создана, удачи в ней постоять, {request.user.first_name}')
+                return render(request, 'lab_queue/mainlist.html', context)
+        form = NewQueueForm(request.POST, initial={
+            'queue_title': request.POST.get('queue_title'),
+            'queue_group': request.POST.get('queue_group'),
+            'queue_info': request.POST.get('queue_info'),
+            'queue_enter_date': request.POST.get('queue_enter_date'),
+        })
+
+    return render(request, 'lab_queue/newqueue.html', {'form': form, 'priorities': priorities})
 
 @login_required
 def account(request):
@@ -321,47 +433,3 @@ def account(request):
         'profile_form': profile_form
     }
     return render(request, 'lab_queue/account.html', context)
-
-
-@login_required
-def newqueue(request):
-    form = NewQueueForm(initial={'queue_title': 'qwe', 'queue_group': 123})
-    priorities = formset_factory(PriorityForm, extra=1)
-    if request.method == 'POST':
-        if 'queue_priorities_number_set' in request.POST:
-            raw_number = request.POST.get('queue_priorities_number')
-            number = int(raw_number) if raw_number else 1
-            priorities = formset_factory(PriorityForm, extra=number)
-        else:
-            form = NewQueueForm(request.POST)
-            priorities = priorities(request.POST, request.FILES)
-            if form.is_valid() and priorities.is_valid():
-                priorities_to_save = []
-                enter_date = form.cleaned_data.get('queue_enter_date') if form.cleaned_data.get(
-                    'queue_enter_date') else timezone.now()
-                for item in priorities.forms:
-                    priorities_to_save.append(('priority'+str(priorities.forms.index(item)),item.cleaned_data.get('priority')))
-                queue_to_create = Queue(
-                    queue_title=form.cleaned_data.get('queue_title'),
-                    queue_group=form.cleaned_data.get('queue_group'),
-                    queue_info=form.cleaned_data.get('queue_info'),
-                    queue_enter_date=enter_date,
-                    queue_priorities=priorities_to_save
-                )
-
-                queue_to_create.save()
-
-                overall_list = Queue.objects.order_by('queue_create_date')
-                context = {'overall_list': overall_list}
-
-                messages.success(
-                    request, f'Очередь была создана, удачи в ней постоять, {request.user.first_name}')
-                return render(request, 'lab_queue/mainlist.html', context)
-        form = NewQueueForm(request.POST, initial={
-            'queue_title': request.POST.get('queue_title'),
-            'queue_group': request.POST.get('queue_group'),
-            'queue_info': request.POST.get('queue_info'),
-            'queue_enter_date': request.POST.get('queue_enter_date'),
-        })
-
-    return render(request, 'lab_queue/newqueue.html', {'form': form, 'priorities': priorities})

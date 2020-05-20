@@ -110,10 +110,60 @@ body {
 
 .nobull {
   list-style-type: none;
- }
+}
  
- .tag_priority {
+.tag_priority {
   border-radius: 10px;
   border: 2px solid lightblue;
   padding: 3px;
- }
+}
+
+.shadow {
+  -webkit-box-shadow: 5px 4px 26px -20px rgba(0,0,0,0.65);
+  -moz-box-shadow: 5px 4px 26px -20px rgba(0,0,0,0.65);
+  box-shadow: 5px 4px 26px -20px rgba(0,0,0,0.65);
+}
+
+.user_in_queue {
+  background-color: lightyellow;
+}
+
+.container-char {
+  width: 400px;
+  height: 400px;
+  margin: 0 auto;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.chat-container {
+  height: 400px;
+  overflow: auto;
+  -webkit-transform: rotate(180deg);
+          transform: rotate(180deg);
+  direction: rtl;
+}
+.chat-container .message {
+  border-bottom: solid 1px #ccc;
+  padding: 20px;
+  -webkit-transform: rotate(180deg);
+          transform: rotate(180deg);
+  direction: ltr;
+}
+.chat-container .message .avatar {
+  float: left;
+  margin-right: 5px;
+}
+.chat-container .message .datetime {
+  float: right;
+  color: #999;
+}
+.send-message-form input {
+  width: 100%;
+  border: none;
+  font-size: 16px;
+  padding: 10px;
+}
+.send-message-form button {
+  display: none;
+}

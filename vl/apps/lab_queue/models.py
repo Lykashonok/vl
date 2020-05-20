@@ -67,3 +67,28 @@ class Profile(models.Model):
     class Meta:
         verbose_name = 'Profile'
         verbose_name_plural = 'Profiles'
+
+class Chat(models.Model):
+    chat_id = models.AutoField(primary_key=True)
+    chat_queue_id = models.ForeignKey(Queue, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Chat with id: {self.chat_id} in queue with id: {self.chat_queue_id}'
+
+    class Meta:
+        verbose_name = 'Chat'
+        verbose_name_plural = 'Chats'
+
+class Message(models.Model):
+    message_id = models.AutoField(primary_key=True)
+    message_chat_id = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    message_user_id = models.IntegerField('id отправителя', blank=False)
+    message_text = models.CharField('текст сообщения', max_length=1000, blank=True, default='')
+    message_date = models.DateTimeField('дата отправления', auto_now_add=True, blank=True)
+
+    def __str__(self):
+        return f'Message with id: {self.message_id} in queue with id: {self.message_chat_id}'
+
+    class Meta:
+        verbose_name = 'Message'
+        verbose_name_plural = 'Messages'

@@ -91,9 +91,7 @@ class PriorityChoiceForm(forms.Form):
         super(PriorityChoiceForm, self).__init__(*args, **kwargs)
         # label_choices = []
         # for choice in choices: label_choices.append(list(eval(choice))[1])
-        self.fields['choices'].choices = choices  
-        
-
+        self.fields['choices'].choices = choices   
     
 
 class EditQueueForm(forms.ModelForm):
