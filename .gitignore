@@ -1,7 +1,3 @@
-/db.sqlite3
-
-<<<<<<< HEAD
-/vl/apps/lab_queue/__pycache__/
-=======
-/vl/apps/lab_queue/__pycache__/
->>>>>>> a165a1d810e49583101e013d19679351c2561bec
+__pycache__/
+*.pyc
+db.sqlite3
