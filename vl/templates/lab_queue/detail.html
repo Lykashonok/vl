@@ -39,7 +39,7 @@
                         <th scope="row">{{user_in_queue.uiq_index}}</th>
                         <td>{{user_in_queue.uiq_first_name}}</td>
                         <td>{{user_in_queue.uiq_second_name}}</td>
-                        <td class="{% if user_in_queue.uiq_group != queue.queue_group %}wrong_group{% endif %}">{{user_in_queue.uiq_group}}</td>
+                        <td>{{user_in_queue.uiq_group}}</td>
                         <td>
                             {% for priority in user_in_queue.uiq_priorities %}
                                 <small class="tag_priority">{{priority}}</small>
