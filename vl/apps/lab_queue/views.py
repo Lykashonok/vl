@@ -87,8 +87,8 @@ def detail(request, queue_id):
                     request, f'{request.user.first_name}, Вы вошли в очередь, удачи подождать.')
                 new_user_in_queue.save()
             elif 'queue_exit' in request.POST:
-                user_to_exit = UserInQueue.objects.filter(
-                    uiq_user_id=request.user.id, uiq_queue_id=queue_id)[0]
+                user_to_exit = UserInQueue.objects.get(
+                    uiq_user_id=request.user.id, uiq_queue_id=queue_id)
                 other_users = UserInQueue.objects.filter(
                     uiq_queue_id=user_to_exit.uiq_queue_id, uiq_index__gt=user_to_exit.uiq_index)
                 for user in other_users:
@@ -227,12 +227,17 @@ def detail(request, queue_id):
                     messages.error(
                         request, f'{request.user.first_name}, удалить не получилось, возможно, её уже нет!')
             elif 'queue_user_delete' in request.POST:
-                try:
-                    user_to_delete = UserInQueue.objects.get(uiq_queue_id = queue_id, uiq_user_id = request.POST.get('queue_user_delete'))
-                    user_to_delete.delete()
-                    messages.success(request, f'{request.user.first_name}, Вы успешно выкинули человека из очереди.')
-                except:
-                    messages.error(request, f'{request.user.first_name}, удалить не получилось!')
+                # try:
+                user_to_delete = UserInQueue.objects.get(uiq_queue_id = queue_id, uiq_user_id = request.POST.get('queue_user_delete'))
+                other_users = UserInQueue.objects.filter(
+                uiq_queue_id=user_to_delete.uiq_queue_id, uiq_index__gt=user_to_delete.uiq_index)
+                for user in other_users:
+                    user.uiq_index -= 1
+                    user.save()
+                user_to_delete.delete()
+                messages.success(request, f'{request.user.first_name}, Вы успешно выкинули человека из очереди.')
+                # except:
+                #     messages.error(request, f'{request.user.first_name}, удалить не получилось!')
             elif 'queue_message_send' in request.POST:
                 try:
                     text = request.POST.get('queue_message_send')
