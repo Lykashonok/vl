@@ -100,7 +100,7 @@
                 <button class="button_main_empty" type='submit' title="Выйти из очереди" name='queue_exit'>Выпрыгнуть</button>
             </form>
         {% endif %}
-        {% if user.profile.user_type == 'headman' or user.profile.user_type == 'teacher' and user.profile.user_group == queue.queue_group %}
+        {% if user.profile.user_type == 'headman' or user.profile.user_type == 'teacher' %}
             <form action='' method='POST'> {% csrf_token %}
                 <div>
                     {% if not queue_delete_start %}
@@ -173,7 +173,7 @@
                                     </p>
                                 {% endif %}
                             {% else %}
-                                Вы преподаватель, вам это не нужно
+                                <p>Вы преподаватель, вам не нужно становиться в очередь</p>
                             {% endif %}
                         </div>
                     </div>
