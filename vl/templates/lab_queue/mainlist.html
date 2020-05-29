@@ -17,7 +17,7 @@
                 <tbody>
                     {% for item in overall_list %}
                         <tr>
-                            <th scope="row"><a href="{% url 'lab_queue:detail' item.queue_id%}">{{item.queue_title}}</a><br></th>
+                            <th scope="row"><a href="{% url 'lab_queue:detail' item.queue_id %}">{{item.queue_title}}</a><br></th>
                             <td>{{item.queue_group}}</td>
                             <td>{{item.queue_create_date}}</td>
                             <td>{{item.queue_info}}</td>

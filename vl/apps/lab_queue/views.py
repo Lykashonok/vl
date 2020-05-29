@@ -7,8 +7,10 @@ from django.utils import timezone
 
 from django.forms import formset_factory
 
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from django.core.mail import send_mail
 from .forms import UserRegisterForm, ProfileForm, QueueEnterForm, ChangeQueueIndexForm, ChangeInfoForm, NewQueueForm, ConfirmForm, EditQueueForm, EditUserForm, PriorityForm, StatusCheckBoxField, PriorityChoiceForm
 
 from .other import swap_instances_index
@@ -24,13 +26,13 @@ def index(request):
 
 
 @login_required
-def detail(request, queue_id):
+def detail(request, queue_id, action=''):
     try:
         queue_enter_form = QueueEnterForm()
         queue_sort_by_enter_date_form = StatusCheckBoxField()
 
         queue = Queue.objects.get(queue_id=queue_id)
-
+        
         queue_priorities = []
         for choice in queue.queue_priorities: queue_priorities.append(list(eval(choice))[1])
 
@@ -58,10 +60,10 @@ def detail(request, queue_id):
             if 'queue_enter' in request.POST:
                 queue_enter_form = QueueEnterForm(request.POST)
                 if len(current_user) != 0:
-                    context.update({
-                        'current_user': current_user[0],
-                        'queue_enter_form': queue_enter_form
-                    })
+                    # context.update({
+                    #     'current_user': current_user[0],
+                    #     'queue_enter_form': queue_enter_form
+                    # })
                     return render(request, 'lab_queue/detail.html', context)
                 info = queue_enter_form.cleaned_data.get(
                     'uiq_info') if queue_enter_form.is_valid() else ''
@@ -181,7 +183,7 @@ def detail(request, queue_id):
             elif 'queue_delete_start' in request.POST:
                 form = ConfirmForm(request.POST)
                 if form.is_valid():
-                    context.update({'queue_delete_start': True})
+                    # context.update({'queue_delete_start': True})
                     return render(request, 'lab_queue/detail.html', context)
             elif 'queue_delete_confirm_true' in request.POST:
                 form = ConfirmForm(request.POST)
@@ -196,13 +198,13 @@ def detail(request, queue_id):
                     else:
                         messages.error(
                             request, f'{request.user.first_name}, удалить не получилось, возможно, её уже нет!')
-                    context = {'overall_list': Queue.objects.order_by(
-                        'queue_create_date')}
+                    # context = {'overall_list': Queue.objects.order_by(
+                    #     'queue_create_date')}
                     return render(request, 'lab_queue/mainlist.html', context)
             elif 'queue_delete_confirm_false' in request.POST:
                 form = ConfirmForm(request.POST)
                 if form.is_valid():
-                    context.update({'queue_delete_start': False})
+                    # context.update({'queue_delete_start': False})
                     return render(request, 'lab_queue/detail.html', context)
             elif 'sort_by_enter_time_change' in request.POST:
                 Queue.objects.filter(queue_id=queue_id).update(
@@ -227,17 +229,17 @@ def detail(request, queue_id):
                     messages.error(
                         request, f'{request.user.first_name}, удалить не получилось, возможно, её уже нет!')
             elif 'queue_user_delete' in request.POST:
-                # try:
-                user_to_delete = UserInQueue.objects.get(uiq_queue_id = queue_id, uiq_user_id = request.POST.get('queue_user_delete'))
-                other_users = UserInQueue.objects.filter(
-                uiq_queue_id=user_to_delete.uiq_queue_id, uiq_index__gt=user_to_delete.uiq_index)
-                for user in other_users:
-                    user.uiq_index -= 1
-                    user.save()
-                user_to_delete.delete()
-                messages.success(request, f'{request.user.first_name}, Вы успешно выкинули человека из очереди.')
-                # except:
-                #     messages.error(request, f'{request.user.first_name}, удалить не получилось!')
+                try:
+                    user_to_delete = UserInQueue.objects.get(uiq_queue_id = queue_id, uiq_user_id = request.POST.get('queue_user_delete'))
+                    other_users = UserInQueue.objects.filter(
+                    uiq_queue_id=user_to_delete.uiq_queue_id, uiq_index__gt=user_to_delete.uiq_index)
+                    for user in other_users:
+                        user.uiq_index -= 1
+                        user.save()
+                    user_to_delete.delete()
+                    messages.success(request, f'{request.user.first_name}, Вы успешно выкинули человека из очереди.')
+                except:
+                    messages.error(request, f'{request.user.first_name}, удалить не получилось!')
             elif 'queue_message_send' in request.POST:
                 try:
                     text = request.POST.get('queue_message_send')
@@ -250,7 +252,8 @@ def detail(request, queue_id):
                     message_to_send.save()
                     # messages.success(request, f'{request.user.first_name}, Вы отправили сообщение.')
                 except:
-                    messages.error(request, f'{request.user.first_name}, Вы не отправили сообщение.')
+                    messages.error(request, f'{request.user.first_name}, Вы не отправили сообщение. Пустое сообщение отправить нельзя!')
+            return HttpResponseRedirect(reverse('lab_queue:detail',args=(queue_id,)))
     except:
         raise Http404("Не получилось найти очередь. Скорее всего её уже удалили")
 

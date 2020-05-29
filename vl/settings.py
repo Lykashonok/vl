@@ -10,6 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
+from .email_info import *
+# Email verification settings
+EMAIL_USER_TLS = EMAIL_USER_TLS
+EMAIL_HOST = EMAIL_HOST
+EMAIL_HOST_USER = EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
+EMAIL_PORT = EMAIL_PORT
+
+
 import os, sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
