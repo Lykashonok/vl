@@ -4,7 +4,7 @@ from django.contrib import admin
 
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
-from .models import Queue, Profile, UserInQueue, Message, Chat
+from .models import Queue, Profile, UserInQueue, Message, Chat, EmailConfirmed
 
 class MessageInline(admin.TabularInline):
     model = Message
@@ -17,11 +17,17 @@ class MessageAdmin(admin.ModelAdmin):
 class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
-    verbose_name_plural = 'Profile'
+    verbose_name_plural = 'Profiles'
+    fk_name = 'user'
+
+class EmailConfirmedInline(admin.StackedInline):
+    model = EmailConfirmed
+    can_delete = False
+    verbose_name_plural = 'EmailConfirmed'
     fk_name = 'user'
 
 class CustomUserAdmin(UserAdmin):
-    inlines = (ProfileInline, )
+    inlines = (ProfileInline, EmailConfirmedInline,)
     def get_inline_instances(self, request, obj=None):
         if not obj:
             return list()

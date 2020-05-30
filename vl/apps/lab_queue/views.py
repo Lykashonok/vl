@@ -10,13 +10,12 @@ from django.forms import formset_factory
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from django.core.mail import send_mail
 from .forms import UserRegisterForm, ProfileForm, QueueEnterForm, ChangeQueueIndexForm, ChangeInfoForm, NewQueueForm, ConfirmForm, EditQueueForm, EditUserForm, PriorityForm, StatusCheckBoxField, PriorityChoiceForm
 
-from .other import swap_instances_index, is_mobile
+from .other import swap_instances_index, is_mobile, get_hash
 
 from django.contrib.auth.models import User
-from .models import Queue, UserInQueue, Profile, Message, Chat
+from .models import Queue, UserInQueue, Profile, Message, Chat, EmailConfirmed
 from django.contrib.auth.decorators import login_required
 
 
@@ -295,7 +294,7 @@ def detail(request, queue_id, action=''):
     for choice in queue.queue_priorities: choices.append(list(eval(choice)))
     priorities_form = PriorityChoiceForm(choices=choices)
 
-    print(is_mobile(request.META['HTTP_USER_AGENT']))
+    # print(is_mobile(request.META['HTTP_USER_AGENT']))
     context = {
         'queue': queue,
         'users': users,
@@ -313,7 +312,6 @@ def detail(request, queue_id, action=''):
 
     return render(request, 'lab_queue/detail.html', context)
 
-
 def register(request):
     if request.method == 'POST':
         user_form = UserRegisterForm(request.POST)
@@ -323,6 +321,13 @@ def register(request):
             profile = profile_form.save(commit=False)
             profile.user = user
             profile.save()
+            email_confirmed, is_email_created = EmailConfirmed.objects.get_or_create(user=user)
+            if is_email_created:
+                email_confirmed.user_activation_key = get_hash(user.email)
+                email_confirmed.save()
+                EmailConfirmed.activate_user_email(email_confirmed, request)
+                
+
             first_name = user_form.cleaned_data.get('first_name')
             messages.success(
                 request, f'Аккаунт был создан, удачи постоять в очередях, {first_name}')
@@ -446,3 +451,22 @@ def account(request):
         'profile_form': profile_form
     }
     return render(request, 'lab_queue/account.html', context)
+
+@login_required
+def activation(request, user_activation_key):
+    context = {'status':'failed'}
+    try:
+        user_confirmed = EmailConfirmed.objects.get(user_activation_key = user_activation_key)
+    except EmailConfirmed.DoesNotExist:
+        raise Http404
+    if user_confirmed is not None and not user_confirmed.user_verified:
+        user_confirmed.user_verified = True
+        user_confirmed.save()
+        context.update({'status':'success'})
+        messages.success(request, f'Аккаунт был подтверждён')
+    elif user_confirmed is not None and user_confirmed.user_verified:
+        messages.warning(request, f'Аккаунт уже был подтверждён до этого')
+        context.update({'status':'already'})
+    else:
+        context.update({'status':'failed'})
+    return render(request, 'lab_queue/activated.html', context)

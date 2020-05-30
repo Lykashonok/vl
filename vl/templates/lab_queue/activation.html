@@ -1,0 +1,8 @@
+Здравствуйте,
+
+Пожалуйста, активируйте ваш аккаунт по этой ссылке: 
+{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{{ object.get_absolute_url }}{{ user_activation_url }}
+
+Спасибо!
+
+Ваш любимый сайт с очередями.

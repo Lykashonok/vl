@@ -13,4 +13,5 @@ urlpatterns = [
     path('newqueue/', lab_queue_views.newqueue, name='newqueue'),
     path('login/', auth_views.LoginView.as_view(template_name='lab_queue/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='lab_queue/logout.html'), name='logout'),
+    path('activation/<str:user_activation_key>/', lab_queue_views.activation, name='activation'),
 ]

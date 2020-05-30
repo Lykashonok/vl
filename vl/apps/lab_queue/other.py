@@ -14,3 +14,12 @@ def is_mobile(request_meta):
         return True
     else:
         return False
+
+import random
+import hashlib
+
+def get_hash(email):
+    short_hash = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:5]
+    base, domain = str(email).split('@')
+    user_activation_key = hashlib.md5(str(short_hash+base).encode('utf-8')).hexdigest()
+    return user_activation_key

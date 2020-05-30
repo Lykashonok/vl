@@ -1,8 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.mail import send_mail
 from django.contrib.postgres.fields import ArrayField
+from django.conf import settings
 
+
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 # Create your models here.
 
 
@@ -67,6 +72,37 @@ class Profile(models.Model):
     class Meta:
         verbose_name = 'Profile'
         verbose_name_plural = 'Profiles'
+
+class EmailConfirmed(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user_activation_key = models.CharField(max_length=200)
+    user_verified = models.BooleanField('активирован ли аккаунт', default=False)
+
+    def __str__(self):
+        return str(self.user_verified)
+
+    class Meta:
+        verbose_name = 'Email Confirmed'
+        verbose_name_plural = 'Emails Confirmed'
+    
+    def activate_user_email(self, request):
+        # https://labqueueisp.herokuapp.com/lab_queue/
+        user_activation_url = '/lab_queue/activation/%s'%(self.user_activation_key)
+        context = {
+            'user_activation_key': self.user_activation_key,
+            'user_activation_url': user_activation_url,
+            'request': request
+        }
+        subject = 'Подтверждение аккаунта на сайте с очередями'
+        message = render_to_string('lab_queue/activation.html', context)
+        to_list = [self.user.email, settings.EMAIL_HOST, ]
+        self.email_user(subject, message,settings.EMAIL_HOST, settings.EMAIL_HOST_USER)
+
+    def email_user(self, subject, message, from_email='From <labqueueisp@gmail.com>', *args, **kwargs):
+        # print(message)
+        send_mail(subject, message, from_email, [self.user.email], **kwargs)
+
+    
 
 class Chat(models.Model):
     chat_id = models.AutoField(primary_key=True)
