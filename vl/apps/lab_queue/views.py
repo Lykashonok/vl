@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from .forms import UserRegisterForm, ProfileForm, QueueEnterForm, ChangeQueueIndexForm, ChangeInfoForm, NewQueueForm, ConfirmForm, EditQueueForm, EditUserForm, PriorityForm, StatusCheckBoxField, PriorityChoiceForm
 
-from .other import swap_instances_index
+from .other import swap_instances_index, is_mobile
 
 from django.contrib.auth.models import User
 from .models import Queue, UserInQueue, Profile, Message, Chat
@@ -256,7 +256,7 @@ def detail(request, queue_id, action=''):
             return HttpResponseRedirect(reverse('lab_queue:detail',args=(queue_id,)))
     except:
         raise Http404("Не получилось найти очередь. Скорее всего её уже удалили")
-
+    
     chat_messages = Message.objects.filter(message_chat_id = chat.chat_id).order_by('-message_date')
     chat_messages_full = []
     for message in chat_messages:
@@ -295,6 +295,7 @@ def detail(request, queue_id, action=''):
     for choice in queue.queue_priorities: choices.append(list(eval(choice)))
     priorities_form = PriorityChoiceForm(choices=choices)
 
+    print(is_mobile(request.META['HTTP_USER_AGENT']))
     context = {
         'queue': queue,
         'users': users,
@@ -302,7 +303,8 @@ def detail(request, queue_id, action=''):
         'user_can_enter_remain': user_can_enter_remain,
         'queue_priorities' : queue_priorities,
         'priorities_form': priorities_form,
-        'chat_messages' : chat_messages
+        'chat_messages' : chat_messages,
+        'is_mobile' : is_mobile(request.META['HTTP_USER_AGENT'])
     }
     if len(current_user) != 0:
         context.update({'current_user': current_user[0]})

@@ -5,9 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Bootstrap standart settings -->
+    
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="{% static 'lab_queue/main.css' %}">
-    <link rel="shortcut icon" type="image/png" href="{% static 'lab_queue/favicon.ico' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
 
     <link rel="stylesheet" href="{% static 'css/gijgo.css'%}">
     <link rel="stylesheet" href="{% static 'css/gijgo.min.css'%}">
@@ -16,12 +17,12 @@
 </head>
 <body>
     <header class="site-header">
-        <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <nav class="navbar navbar-expand-md navbar-dark bg-steel sticky-top">
             <div class="container" style="max-width: 85%;">
                 <a class="navbar-brand mr-4" href="/lab_queue">Очереди</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
-                </button>
+                </button> -->
                 <div class="navbar-nav mr-auto">
                     {% if user.profile.type != 'student' %}
                         <a class="nav-item nav-link" href="{% url 'lab_queue:newqueue' %}">Новая очередь</a>
@@ -60,8 +61,8 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
     <!-- Gijgo scripts -->
-    <script src="{% static 'gijgo/js/gijgo.js'%}" charset="utf-8"></script>
-    <script src="{% static 'gijgo/js/gijgo.min.js'%}" charset="utf-8"></script>
+    <script src="{% static 'js/gijgo.js'%}" charset="utf-8"></script>
+    <script src="{% static 'js/gijgo.min.js'%}" charset="utf-8"></script>
     <script>
         $('#id_queue_enter_date').datetimepicker(
             {
