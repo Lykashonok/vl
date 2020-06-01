@@ -1,0 +1,30 @@
+{% extends 'admin/change_list.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block object-tools %}
+    <div >
+        <form id='sendMailForm' method="GET" style="padding: 20px">
+            {% csrf_token %}
+            <legend>Отправить письмо выбранным пользователям</legend>
+            <fieldset>
+                <input name='mailSubject' type="text" placeholder="Тема письма"><br>
+                <textarea name='mailText'cols="30" rows="10" placeholder="Текст"></textarea>
+            </fieldset>
+            <small>
+                Если пользователь не указал почту, письмо ему не отправится
+            </small><br>
+            <small>
+                Чтобы отправить, выберите нужных пользователей и в действиях выберите "Отправить письмо..."
+            </small>
+        </form>
+        <script>
+            let sendMailForm = document.querySelector('#sendMailForm')
+            sendMailForm.querySelector('input[name="mailSubject"]').addEventListener('change', function(e) {
+                let mailSubject = e.target.value
+                sendMailForm.action = 'sendMailForm/'+mailSubject+'/' 
+            })
+        </script>
+    </div>
+    {{block.super}}
+{% endblock %}

@@ -12,7 +12,7 @@
             <legend>Изменение очереди</legend>
             <fieldset>
                 {{ form|crispy }}
-                <p>Приоритеты</p> <small>(по ним можно сортировать стоящих в очереди)</small><br><small>(имейте ввиду, что текущие приоритеты у стоящих в очереди исчезнут)</small>
+                <p>Приоритеты</p> <small>(по ним можно сортировать стоящих в очереди)</small><br>
                 <div style="display: flex; margin-top: 5px; margin-bottom: 5px;">
                     <input type="number" name="queue_priorities_number" placeholder="количество приоритетов" style="margin-right: 10px; width: auto;">
                     <button class="button_main_empty" name="queue_priorities_number_set" type="submit" value="True">Изменить</button>
@@ -24,6 +24,7 @@
             </fieldset>
             <div>
                 <button class="button_main_empty" type="submit">Изменить очередь</button>
+                <small>(имейте ввиду, что текущие приоритеты у стоящих в очереди исчезнут)</small>
             </div>
         </form>
     </div>

@@ -99,7 +99,6 @@ class EmailConfirmed(models.Model):
         self.email_user(subject, message,settings.EMAIL_HOST, settings.EMAIL_HOST_USER)
 
     def email_user(self, subject, message, from_email='From <labqueueisp@gmail.com>', *args, **kwargs):
-        # print(message)
         send_mail(subject, message, from_email, [self.user.email], **kwargs)
 
     

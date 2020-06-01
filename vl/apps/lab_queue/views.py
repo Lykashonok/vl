@@ -5,6 +5,9 @@ from django.urls import reverse
 from django import forms
 from django.utils import timezone
 
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+
 from django.forms import formset_factory
 
 from django.conf import settings
@@ -182,7 +185,7 @@ def detail(request, queue_id, action=''):
             elif 'queue_delete_start' in request.POST:
                 form = ConfirmForm(request.POST)
                 if form.is_valid():
-                    # context.update({'queue_delete_start': True})
+                    context.update({'queue_delete_start': True})
                     return render(request, 'lab_queue/detail.html', context)
             elif 'queue_delete_confirm_true' in request.POST:
                 form = ConfirmForm(request.POST)
@@ -197,13 +200,13 @@ def detail(request, queue_id, action=''):
                     else:
                         messages.error(
                             request, f'{request.user.first_name}, удалить не получилось, возможно, её уже нет!')
-                    # context = {'overall_list': Queue.objects.order_by(
-                    #     'queue_create_date')}
+                    context = {'overall_list': Queue.objects.order_by(
+                        'queue_create_date')}
                     return render(request, 'lab_queue/mainlist.html', context)
             elif 'queue_delete_confirm_false' in request.POST:
                 form = ConfirmForm(request.POST)
                 if form.is_valid():
-                    # context.update({'queue_delete_start': False})
+                    context.update({'queue_delete_start': False})
                     return render(request, 'lab_queue/detail.html', context)
             elif 'sort_by_enter_time_change' in request.POST:
                 Queue.objects.filter(queue_id=queue_id).update(
@@ -326,11 +329,10 @@ def register(request):
                 email_confirmed.user_activation_key = get_hash(user.email)
                 email_confirmed.save()
                 EmailConfirmed.activate_user_email(email_confirmed, request)
-                
-
             first_name = user_form.cleaned_data.get('first_name')
+            email = user_form.cleaned_data.get('email')
             messages.success(
-                request, f'Аккаунт был создан, удачи постоять в очередях, {first_name}')
+                request, f'Аккаунт был создан, удачи постоять в очередях, {first_name}. На вашу почту {email} было отправлено письмо с ссылкой для активации аккаунта. Проверьте почту.')
             return redirect('/lab_queue/login')
         else:
             messages.error(
@@ -387,7 +389,7 @@ def editqueue(request, queue_id):
 
 @login_required
 def newqueue(request):
-    form = NewQueueForm(initial={'queue_title': 'qwe', 'queue_group': 123})
+    form = NewQueueForm(initial={'queue_title': '', 'queue_group': 0})
     priorities = formset_factory(PriorityForm, extra=1)
     if request.method == 'POST':
         if 'queue_priorities_number_set' in request.POST:
@@ -428,27 +430,54 @@ def newqueue(request):
 
 @login_required
 def account(request):
+    user_form = EditUserForm()
+    profile_form =ProfileForm()
+    print('passed1')
+    user_form = EditUserForm(initial={
+        'username': request.user.username,
+        'email': request.user.email,
+        'first_name': request.user.first_name,
+        'last_name': request.user.last_name
+    })
+    profile_form = ProfileForm(initial={
+        'user_type': request.user.profile.user_type,
+        'user_group': request.user.profile.user_group
+    })
     if request.method == 'POST':
-        user_form = EditUserForm(request.POST, instance=request.user)
-        profile_form = ProfileForm(request.POST, instance=request.user.profile)
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            messages.success(request, f'Описание очереди было изменено')
-            return redirect('lab_queue:account')
-    else:
-        user_form = EditUserForm(initial={
-            'username': request.user.username,
-            'first_name': request.user.first_name,
-            'last_name': request.user.last_name
-        })
-        profile_form = ProfileForm(initial={
-            'user_type': request.user.profile.user_type,
-            'user_group': request.user.profile.user_group
-        })
+        if 'edit_account' in request.POST:
+            user_form = EditUserForm(request.POST, instance=request.user)
+            profile_form = ProfileForm(request.POST, instance=request.user.profile)
+            if user_form.is_valid() and profile_form.is_valid():
+                user_form.save()
+                profile_form.save()
+                messages.success(request, f'Описание очереди было изменено')
+                return HttpResponseRedirect(reverse('lab_queue:account'))
+        elif 'send_verification_account' in request.POST:
+            try:
+                if not request.user.email: raise
+                email_confirmed, is_email_created = EmailConfirmed.objects.get_or_create(user=request.user)
+                if email_confirmed:
+                    email_confirmed.user_activation_key = get_hash(request.user.email)
+                    email_confirmed.save()
+                    EmailConfirmed.activate_user_email(email_confirmed, request)
+                    user_activation_url = '/lab_queue/activation/%s'%(email_confirmed.user_activation_key)
+                    context = {
+                        'user_activation_key': email_confirmed.user_activation_key,
+                        'user_activation_url': user_activation_url,
+                        'request': request
+                    }
+                    subject = 'Подтверждение аккаунта на сайте с очередями'
+                    message = render_to_string('lab_queue/activation.html', context)
+                    to_list = [request.user.email, settings.EMAIL_HOST, ]
+                    send_mail(subject, message, 'From <labqueueisp@gmail.com>', [request.user.email])
+                    messages.success(request, f'Сообщение было отправлено! Проверьте вашу почту')
+            except:
+                messages.error(request, f'Сообщение не было отправлено, что-то не так с почтой или письмом')
+            return HttpResponseRedirect(reverse('lab_queue:account'))
     context = {
         'user_form': user_form,
-        'profile_form': profile_form
+        'profile_form': profile_form,
+        'user_confirmed': EmailConfirmed.objects.get_or_create(user=request.user)[0].user_verified
     }
     return render(request, 'lab_queue/account.html', context)
 

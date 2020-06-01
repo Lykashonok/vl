@@ -117,7 +117,7 @@ class EditUserForm(UserChangeForm):
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name')
+        fields = ('username','email', 'first_name', 'last_name')
 
 
 class QueueEnterForm(forms.ModelForm):
@@ -141,3 +141,7 @@ class ConfirmForm(forms.Form):
     queue_delete_start = forms.BooleanField(required=False)
     queue_delete_confirm_true = forms.IntegerField(required=False)
     queue_delete_confirm_false = forms.BooleanField(required=False)
+
+class SendMailForm(forms.Form):
+    send_mail_subject = forms.CharField()
+    send_mail_text = forms.CharField(widget=forms.Textarea())

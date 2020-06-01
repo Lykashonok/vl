@@ -6,6 +6,17 @@
 
 {% block content %}
     <div>
+        {% if not user_confirmed %}
+            <form action="" method="POST">{% csrf_token %}
+                <div style="background-color: rosybrown; padding: 15px;">
+                    <h4>Ваш аккаунт не активирован</h4>
+                    <p>Не беспокойтесь, просто нажмите на кнопку</p>
+                    <p><button class="button_main_empty" name="send_verification_account" type="submit">Отправить</button></p>
+                    На указанную почту придёт письмо, с которого вы сможете активировать свой аккаунт<br>
+                    <small>Если почта не указана, письмо не отправится</small>
+                </div>
+            </form>
+        {% endif%}
         <form action="" method="POST">
             {% csrf_token %}
             <legend>Это данные Вашего аккаунта, Вы можете их изменить</legend>
@@ -14,7 +25,7 @@
                 {{ profile_form|crispy }}
             </fieldset>
             <div>
-                <button class="button_main_empty" type="submit">Изменить</button>
+                <button class="button_main_empty" name="edit_account" type="submit">Изменить</button>
             </div>
         </form>
     </div>
