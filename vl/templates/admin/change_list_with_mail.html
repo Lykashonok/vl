@@ -4,7 +4,7 @@
 
 {% block object-tools %}
     <div >
-        <form id='sendMailForm' method="GET" style="padding: 20px">
+        <form id='sendMailForm' method="POST" style="padding: 20px">
             {% csrf_token %}
             <legend>Отправить письмо выбранным пользователям</legend>
             <fieldset>
@@ -14,16 +14,44 @@
             <small>
                 Если пользователь не указал почту, письмо ему не отправится
             </small><br>
-            <small>
-                Чтобы отправить, выберите нужных пользователей и в действиях выберите "Отправить письмо..."
-            </small>
+            <input type="submit" name="send_mail" value="Разослать письмо">
         </form>
         <script>
-            let sendMailForm = document.querySelector('#sendMailForm')
-            sendMailForm.querySelector('input[name="mailSubject"]').addEventListener('change', function(e) {
-                let mailSubject = e.target.value
-                sendMailForm.action = 'sendMailForm/'+mailSubject+'/' 
+            let sendMailForm = document.querySelector('#sendMailForm');
+            let mailSubject, mailText, emails = {}, emailsString = '';
+            let inputs = document.querySelector('#result_list');
+            function validateEmail(email) {
+                const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                return re.test(String(email).toLowerCase());
+            }
+            sendMailForm.querySelector('input[name="mailSubject"]').addEventListener('change', e => {
+                mailSubject = e.target.value
+                sendMailForm.action = 'mailSend /'+mailSubject +'/'+mailText+'/'+emailsString+'/'
+                initInputs()
             })
+            sendMailForm.querySelector('textarea[name="mailText"]').addEventListener('change', e => {
+                mailText = e.target.value
+                sendMailForm.action = 'mailSend/'+mailSubject +'/'+mailText+'/'+emailsString+'/'
+                initInputs()
+            })
+            function initInputs() {
+                inputs = document.querySelector('#result_list').children[1].getElementsByClassName("action-select");
+                for(let input of inputs) {
+                    input.addEventListener('change', e => {
+                        if(input.parentElement.parentElement.children[2].innerText) emails[input.parentElement.parentElement.children[2].innerText] = input.parentElement.parentElement.children[2].innerText;
+                        emailsString = '';
+                        for(let email in emails) emailsString += email + ','
+                        sendMailForm.action = 'mailSend/'+mailSubject +'/'+mailText+'/'+emailsString+'/'
+                    })
+                }
+                let table = document.querySelector('#result_list'),
+                    rows = table.getElementsByClassName('selected'), i, j;
+                for (i = 0; i < rows.length; ++i) {
+                    email = rows[i].getElementsByClassName('field-email')[0].innerHTML
+                    validateEmail(email) ? emails[email] = email : null;
+                }
+                sendMailForm.action = 'mailSend/'+mailSubject +'/'+mailText+'/'+emailsString+'/'
+            }
         </script>
     </div>
     {{block.super}}

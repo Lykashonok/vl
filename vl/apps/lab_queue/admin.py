@@ -5,13 +5,15 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 from .models import Queue, Profile, UserInQueue, Message, Chat, EmailConfirmed
-from .admin_custom import send_mail_view
 
-from django.shortcuts import render
 from .forms import SendMailForm
 from vl.settings import EMAIL_HOST_USER
 from django.urls import path
 from django.http import HttpResponseRedirect
+from multiprocessing import Pool, cpu_count
+from django.core.mail import send_mail
+from .other import solo_send_mail
+import re
 
 class MessageInline(admin.TabularInline):
     model = Message
@@ -38,30 +40,31 @@ class CustomUserAdmin(UserAdmin):
 
     change_list_template = 'admin/change_list_with_mail.html'
 
-    def send_mail_to_users(self, request, queryset):
+    def send_mail_to_users(self, request, mailSubject, mailText, emails):
         mail_send_form = SendMailForm()
         context = {
-            'users':list(queryset),
+            # 'users':list(queryset),
             'form': mail_send_form
         }
         if request.method == "POST":
-            if 'send_mail_subject' in request.POST or 'send_mail_text' in request.POST:
-                send_mail_subject = request.POST.get('send_mail_subject')
-                send_mail_text = request.POST.get('send_mail_text')
-                mails = []
-                for mail in queryset: mails.append(queryset.email)
-                to_list = [*mail, EMAIL_HOST_USER]
-                print(to_list)
-        return HttpResponseRedirect("../")
+            if 'send_mail' in request.POST:
+                emails = list(filter(lambda email: re.search('^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$',email), emails.split(',')))
+                if len(emails) != 0 and mailSubject and mailText:
+                    to_list = [*emails,] #EMAIL_HOST_USER]
+                    mails_to_send = []
+                    for mail in emails: mails_to_send.append({"mailSubject" : mailSubject, "mailText" : mailText, "mail": mail})
+
+                    pool = Pool(processes=cpu_count())
+                    pool.map(solo_send_mail, mails_to_send)
+                    
+        return HttpResponseRedirect("../../../../")
     
     send_mail_to_users.short_description = 'Отправить письмо на почту следующим пользователям'
-
-    actions = [send_mail_to_users,]
 
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('mailSend/<int:mailSubject>/', self.send_mail_to_users)
+            path('mailSend/<str:mailSubject>/<str:mailText>/<str:emails>/', self.send_mail_to_users),
         ]
         return custom_urls + urls
 

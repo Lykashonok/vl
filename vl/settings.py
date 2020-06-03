@@ -89,7 +89,10 @@ DATABASES = {
         'USER': 'vlad',
         'PASSWORD': '321',
         'HOST': 'localhost',
-        'PORT': ''
+        'PORT': '',
+        'TESET': {
+            'NAME': 'dbvl_test'
+        }
     }
 }
 
@@ -129,7 +132,30 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-
+from .apps.lab_queue.other import DjangoColorsFormatter
+LOGGING = {  
+    'version': 1,   
+    'disable_existing_loggers': False,
+    'formatters': {  
+        'colored': {
+            '()': DjangoColorsFormatter,
+            'format': '[%(asctime)s] - %(levelname)s - %(message)s \n',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'colored',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+    },
+}
 
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static/')

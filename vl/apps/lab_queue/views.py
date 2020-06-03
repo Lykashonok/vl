@@ -28,7 +28,7 @@ def index(request):
 
 
 @login_required
-def detail(request, queue_id, action=''):
+def detail(request, queue_id):
     try:
         queue_enter_form = QueueEnterForm()
         queue_sort_by_enter_date_form = StatusCheckBoxField()
@@ -306,7 +306,7 @@ def detail(request, queue_id, action=''):
         'queue_priorities' : queue_priorities,
         'priorities_form': priorities_form,
         'chat_messages' : chat_messages,
-        'is_mobile' : is_mobile(request.META['HTTP_USER_AGENT'])
+        # 'is_mobile' : is_mobile(request.META['HTTP_USER_AGENT'])
     }
     if len(current_user) != 0:
         context.update({'current_user': current_user[0]})

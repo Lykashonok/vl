@@ -12,7 +12,7 @@ from django.utils.html import strip_tags
 
 
 class Queue(models.Model):
-    queue_id = models.AutoField(primary_key=True)
+    queue_id = models.AutoField(primary_key=True, db_index=True)
     queue_title = models.CharField('название очереди', max_length=100)
     queue_group = models.IntegerField('номер группы')
     queue_info = models.TextField('дополнительная информация', blank=True)
@@ -34,7 +34,7 @@ class Queue(models.Model):
 
 
 class UserInQueue(models.Model):
-    queue_id = models.AutoField(primary_key=True)
+    queue_id = models.AutoField(primary_key=True, db_index=True)
     uiq_user_id = models.IntegerField('id пользователя')
     uiq_queue_id = models.ForeignKey(Queue, on_delete=models.CASCADE)
     uiq_info = models.TextField(
@@ -75,7 +75,7 @@ class Profile(models.Model):
 
 class EmailConfirmed(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    user_activation_key = models.CharField(max_length=200)
+    user_activation_key = models.CharField(max_length=200, db_index=True)
     user_verified = models.BooleanField('активирован ли аккаунт', default=False)
 
     def __str__(self):
@@ -104,7 +104,7 @@ class EmailConfirmed(models.Model):
     
 
 class Chat(models.Model):
-    chat_id = models.AutoField(primary_key=True)
+    chat_id = models.AutoField(primary_key=True, db_index=True)
     chat_queue_id = models.ForeignKey(Queue, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -115,7 +115,7 @@ class Chat(models.Model):
         verbose_name_plural = 'Chats'
 
 class Message(models.Model):
-    message_id = models.AutoField(primary_key=True)
+    message_id = models.AutoField(primary_key=True, db_index=True)
     message_chat_id = models.ForeignKey(Chat, on_delete=models.CASCADE)
     message_user_id = models.IntegerField('id отправителя', blank=False)
     message_text = models.CharField('текст сообщения', max_length=1000, blank=True, default='')
