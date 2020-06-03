@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
+from django.contrib.postgres.indexes import BrinIndex
 
 
 from django.template.loader import render_to_string
@@ -31,6 +32,9 @@ class Queue(models.Model):
     class Meta:
         verbose_name = 'Queue'
         verbose_name_plural = 'Queues'
+        indexes = (
+            BrinIndex(fields=['queue_id']),
+        )
 
 
 class UserInQueue(models.Model):
@@ -58,6 +62,9 @@ class UserInQueue(models.Model):
     class Meta:
         verbose_name = 'User in queue'
         verbose_name_plural = 'Users in queues'
+        indexes = (
+            BrinIndex(fields=['queue_id']),
+        )
 
 
 class Profile(models.Model):
@@ -84,6 +91,9 @@ class EmailConfirmed(models.Model):
     class Meta:
         verbose_name = 'Email Confirmed'
         verbose_name_plural = 'Emails Confirmed'
+        indexes = (
+            BrinIndex(fields=['user_activation_key']),
+        )
     
     def activate_user_email(self, request):
         # https://labqueueisp.herokuapp.com/lab_queue/
@@ -113,6 +123,9 @@ class Chat(models.Model):
     class Meta:
         verbose_name = 'Chat'
         verbose_name_plural = 'Chats'
+        indexes = (
+            BrinIndex(fields=['chat_id']),
+        )
 
 class Message(models.Model):
     message_id = models.AutoField(primary_key=True, db_index=True)
@@ -127,3 +140,6 @@ class Message(models.Model):
     class Meta:
         verbose_name = 'Message'
         verbose_name_plural = 'Messages'
+        indexes = (
+            BrinIndex(fields=['message_id']),
+        )

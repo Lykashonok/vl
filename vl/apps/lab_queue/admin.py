@@ -47,15 +47,15 @@ class CustomUserAdmin(UserAdmin):
             'form': mail_send_form
         }
         if request.method == "POST":
-            if 'send_mail' in request.POST:
-                emails = list(filter(lambda email: re.search('^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$',email), emails.split(',')))
-                if len(emails) != 0 and mailSubject and mailText:
-                    to_list = [*emails,] #EMAIL_HOST_USER]
-                    mails_to_send = []
-                    for mail in emails: mails_to_send.append({"mailSubject" : mailSubject, "mailText" : mailText, "mail": mail})
-
-                    pool = Pool(processes=cpu_count())
-                    pool.map(solo_send_mail, mails_to_send)
+            print(mailSubject, mailText, emails)
+            emails = list(filter(lambda email: re.search('^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$',email), emails.split(',')))
+            if len(emails) != 0 and mailSubject and mailText:
+                print(request.POST)
+                to_list = [*emails,] #EMAIL_HOST_USER]
+                mails_to_send = []
+                for mail in emails: mails_to_send.append({"mailSubject" : request.POST.get('mailSubject'), "mailText" : request.POST.get('mailText'), "mail": mail})
+                pool = Pool(processes=cpu_count())
+                pool.map(solo_send_mail, mails_to_send)
                     
         return HttpResponseRedirect("../../../../")
     
