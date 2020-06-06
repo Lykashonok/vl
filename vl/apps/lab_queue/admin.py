@@ -28,6 +28,7 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'Profiles'
     fk_name = 'user'
+    
 
 class EmailConfirmedInline(admin.StackedInline):
     model = EmailConfirmed
@@ -37,8 +38,14 @@ class EmailConfirmedInline(admin.StackedInline):
 
 class CustomUserAdmin(UserAdmin):
     inlines = (ProfileInline, EmailConfirmedInline, )
-
+    list_display= ('id','username','email','first_name','last_name','user_type','user_group')
     change_list_template = 'admin/change_list_with_mail.html'
+
+    def user_type(self, obj):
+        return f"{obj.profile.user_type}"
+
+    def user_group(self, obj):
+        return f"{obj.profile.user_group}"
 
     def send_mail_to_users(self, request, mailSubject, mailText, emails):
         mail_send_form = SendMailForm()
