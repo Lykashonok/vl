@@ -450,7 +450,7 @@ def account(request):
             if user_form.is_valid() and profile_form.is_valid():
                 user_form.save()
                 profile_form.save()
-                messages.success(request, f'Описание очереди было изменено')
+                messages.success(request, f'Описание аккаунта было изменено')
                 return HttpResponseRedirect(reverse('lab_queue:account'))
         elif 'send_verification_account' in request.POST:
             try:

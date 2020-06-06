@@ -43,11 +43,11 @@ TYPE_CHOISES_RU = [
 
 
 class ProfileForm(forms.ModelForm):
-    user_type = forms.ChoiceField(
-        label=_('Кто я?'),
-        required=True,
-        choices=TYPE_CHOISES_RU,
-    )
+    # user_type = forms.ChoiceField(
+    #     label=_('Кто я?'),
+    #     required=True,
+    #     choices=TYPE_CHOISES_RU,
+    # )
     user_group = forms.IntegerField(
         label=_('Группа'),
         help_text=_('В полной форме (85350?)')
@@ -55,7 +55,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['user_group', 'user_type']
+        fields = ['user_group']
 
 
 class NewQueueForm(forms.ModelForm):

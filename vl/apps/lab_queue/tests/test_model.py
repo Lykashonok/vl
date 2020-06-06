@@ -1,7 +1,7 @@
 from mixer.backend.django import mixer
 import pytest
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def queue_sorted(request, db):
     return mixer.blend('lab_queue.Queue', queue_title = 'testqueue', queue_sort_by_enter_time = request.param)
 

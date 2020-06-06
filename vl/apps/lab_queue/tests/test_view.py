@@ -6,16 +6,15 @@ from lab_queue.views import detail
 from django.test import TestCase
 import pytest
 
-
 @pytest.fixture(scope='module')
 def factory():
     return RequestFactory()
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def new_queue(db):
     mixer.blend('lab_queue.Queue', queue_title = 'testqueue', queue_id = 1)
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def path_detail(db):
     return reverse('lab_queue:detail', kwargs={'queue_id': 1})
 

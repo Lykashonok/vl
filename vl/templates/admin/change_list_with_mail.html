@@ -37,35 +37,6 @@
                 sendMailForm.action = 'mailSend/'+mailSubject +'/'+mailText+'/'+emailsString+'/'
                 sendMailForm.submit()
             })
-            // sendMailForm.querySelector('input[name="mailSubject"]').addEventListener('change', e => {
-            //     mailSubject = e.target.value
-            //     sendMailForm.action = 'mailSend /'+mailSubject +'/'+mailText+'/'+emailsString+'/'
-            //     initInputs()
-            // })
-            // sendMailForm.querySelector('textarea[name="mailText"]').addEventListener('change', e => {
-            //     mailText = e.target.value
-            //     sendMailForm.action = 'mailSend/'+mailSubject +'/'+mailText+'/'+emailsString+'/'
-            //     initInputs()
-            // })
-            // function initInputs() {
-            //     inputs = document.querySelector('#result_list').children[1].getElementsByClassName("action-select");
-            //     for(let input of inputs) {
-            //         input.addEventListener('change', e => {
-            //             if(input.parentElement.parentElement.children[2].innerText) emails[input.parentElement.parentElement.children[2].innerText] = input.parentElement.parentElement.children[2].innerText;
-            //             emailsString = '';
-            //             for(let email in emails) emailsString += email + ','
-            //             sendMailForm.action = 'mailSend/'+mailSubject +'/'+mailText+'/'+emailsString+'/'
-            //         })
-            //     }
-            //     let table = document.querySelector('#result_list'),
-            //         rows = table.getElementsByClassName('selected'), i, j;
-            //     for (i = 0; i < rows.length; ++i) {
-            //         email = rows[i].getElementsByClassName('field-email')[0].innerHTML
-            //         validateEmail(email) ? emails[email] = email : null;
-            //     }
-            //     e.preventDefault();
-            //     sendMailForm.action = 'mailSend/'+mailSubject +'/'+mailText+'/'+emailsString+'/'
-            // }
         </script>
     </div>
     {{block.super}}
