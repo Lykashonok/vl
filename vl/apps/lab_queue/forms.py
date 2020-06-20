@@ -15,8 +15,9 @@ class DateInput(forms.DateInput):
 
 
 class UserRegisterForm(UserCreationForm):
-    first_name = forms.CharField(required=True)
-    last_name = forms.CharField(required=True)
+    first_name = forms.CharField(required=True, label='Имя')
+    last_name = forms.CharField(required=True, label='Фамилия')
+    email = forms.CharField(required=True, label='Почта', help_text=_('На почту будет отправлена ссылка для активации аккаунта'))
 
     class Meta:
         model = User
@@ -48,6 +49,11 @@ class ProfileForm(forms.ModelForm):
     #     required=True,
     #     choices=TYPE_CHOISES_RU,
     # )
+    user_type = forms.CharField(
+        label=_('Тип пользователя'),
+        widget=forms.TextInput(attrs={'readonly':'readonly'}),
+        initial='student'
+    )
     user_group = forms.IntegerField(
         label=_('Группа'),
         help_text=_('В полной форме (85350?)')
@@ -55,7 +61,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['user_group']
+        fields = ['user_group', 'user_type']
 
 
 class NewQueueForm(forms.ModelForm):
@@ -121,7 +127,7 @@ class EditUserForm(UserChangeForm):
 
 
 class QueueEnterForm(forms.ModelForm):
-    # additional_info = forms.CharField()
+    uiq_info = forms.CharField(required=False, label='Дополнительная информация')
     class Meta:
         model = UserInQueue
         fields = ['uiq_info']

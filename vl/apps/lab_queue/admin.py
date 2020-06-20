@@ -65,6 +65,14 @@ class CustomUserAdmin(UserAdmin):
                 pool.map(solo_send_mail, mails_to_send)
                     
         return HttpResponseRedirect("../../../../")
+
+    actions=['set_user_type_to_student',]
+    
+    def set_user_type_to_student(self, request, queryset):
+        print(queryset)
+        for user in queryset:
+            user.profile.user_type = 'student'
+        queryset.update()
     
     send_mail_to_users.short_description = 'Отправить письмо на почту следующим пользователям'
 
