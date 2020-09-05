@@ -6,7 +6,7 @@
 
 {% block content %}
     <div>
-        {% if not user_confirmed %}
+        <!-- {% if not user_confirmed %}
             <form action="" method="POST">{% csrf_token %}
                 <div style="background-color: rosybrown; padding: 15px;">
                     <h4>Ваш аккаунт не активирован</h4>
@@ -16,7 +16,7 @@
                     <small>Если почта не указана, письмо не отправится</small>
                 </div>
             </form>
-        {% endif%}
+        {% endif%} -->
         <form action="" method="POST">
             {% csrf_token %}
             <legend>Это данные Вашего аккаунта, Вы можете их изменить</legend>

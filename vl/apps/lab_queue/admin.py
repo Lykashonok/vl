@@ -50,14 +50,11 @@ class CustomUserAdmin(UserAdmin):
     def send_mail_to_users(self, request, mailSubject, mailText, emails):
         mail_send_form = SendMailForm()
         context = {
-            # 'users':list(queryset),
             'form': mail_send_form
         }
         if request.method == "POST":
-            print(mailSubject, mailText, emails)
             emails = list(filter(lambda email: re.search('^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$',email), emails.split(',')))
             if len(emails) != 0 and mailSubject and mailText:
-                print(request.POST)
                 to_list = [*emails,] #EMAIL_HOST_USER]
                 mails_to_send = []
                 for mail in emails: mails_to_send.append({"mailSubject" : request.POST.get('mailSubject'), "mailText" : request.POST.get('mailText'), "mail": mail})
@@ -69,7 +66,7 @@ class CustomUserAdmin(UserAdmin):
     actions=['set_user_type_to_student',]
     
     def set_user_type_to_student(self, request, queryset):
-        print(queryset)
+        # print(queryset)
         for user in queryset:
             user.profile.user_type = 'student'
         queryset.update()

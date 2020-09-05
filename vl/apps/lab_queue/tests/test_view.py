@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User, AnonymousUser
 from mixer.backend.django import mixer
 from lab_queue.views import detail
+from lab_queue.forms import test_form
 from django.test import TestCase
 import pytest
 
@@ -38,3 +39,9 @@ def test_register(factory, new_queue, db):
     request.user = AnonymousUser()
     response = detail(request)
     assert response.status_code == 302
+
+def test_profile(factory, new_queue, db):
+
+    profile_form = test_form()
+
+    assert profile_form.is_valid() == True

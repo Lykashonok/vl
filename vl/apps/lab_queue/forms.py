@@ -44,11 +44,6 @@ TYPE_CHOISES_RU = [
 
 
 class ProfileForm(forms.ModelForm):
-    # user_type = forms.ChoiceField(
-    #     label=_('Кто я?'),
-    #     required=True,
-    #     choices=TYPE_CHOISES_RU,
-    # )
     user_type = forms.CharField(
         label=_('Тип пользователя'),
         widget=forms.TextInput(attrs={'readonly':'readonly'}),

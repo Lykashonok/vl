@@ -18,8 +18,10 @@ from .forms import UserRegisterForm, ProfileForm, QueueEnterForm, ChangeQueueInd
 from .other import swap_instances_index, is_mobile, get_hash
 
 from django.contrib.auth.models import User
-from .models import Queue, UserInQueue, Profile, Message, Chat, EmailConfirmed
+from .models import Queue, UserInQueue, Profile, EmailConfirmed
 from django.contrib.auth.decorators import login_required
+
+from .queue_log import QueueLogger
 
 
 def index(request):
@@ -29,6 +31,7 @@ def index(request):
 
 @login_required
 def detail(request, queue_id):
+    QueueLogger.createLog('enter', user=request.user)
     try:
         queue_enter_form = QueueEnterForm()
         queue_sort_by_enter_date_form = StatusCheckBoxField()
@@ -37,13 +40,6 @@ def detail(request, queue_id):
         
         queue_priorities = []
         for choice in queue.queue_priorities: queue_priorities.append(list(eval(choice))[1])
-
-        try:
-            chat = Chat.objects.get(chat_queue_id=queue_id)
-        except:
-            chat = Chat(chat_queue_id=queue)
-            chat.save()
-            
 
         user_can_enter = timezone.now() > queue.queue_enter_date
         user_can_enter_remain = queue.queue_enter_date - timezone.now()
@@ -242,38 +238,9 @@ def detail(request, queue_id):
                     messages.success(request, f'{request.user.first_name}, Вы успешно выкинули человека из очереди.')
                 except:
                     messages.error(request, f'{request.user.first_name}, удалить не получилось!')
-            elif 'queue_message_send' in request.POST:
-                try:
-                    text = request.POST.get('queue_message_send')
-                    if not text: raise
-                    message_to_send = Message(
-                        message_chat_id = chat, 
-                        message_text = text,
-                        message_user_id = request.user.id
-                    )
-                    message_to_send.save()
-                    # messages.success(request, f'{request.user.first_name}, Вы отправили сообщение.')
-                except:
-                    messages.error(request, f'{request.user.first_name}, Вы не отправили сообщение. Пустое сообщение отправить нельзя!')
             return HttpResponseRedirect(reverse('lab_queue:detail',args=(queue_id,)))
     except:
         raise Http404("Не получилось найти очередь. Скорее всего её уже удалили")
-    
-    chat_messages = Message.objects.filter(message_chat_id = chat.chat_id).order_by('-message_date')
-    chat_messages_full = []
-    for message in chat_messages:
-        user = User.objects.get(id = message.message_user_id)
-        chat_messages_full.append({
-            "text" : message.message_text,
-            "date" : message.message_date,
-            "user" :  {
-                "first_name" : user.first_name,
-                "last_name" : user.last_name,
-                "type": user.profile.user_type,
-                "id": user.id
-            }
-        })
-    chat_messages = chat_messages_full
 
     queue = Queue.objects.get(queue_id=queue_id)
     users = list(UserInQueue.objects.filter(uiq_queue_id=queue_id).order_by('uiq_index'))
@@ -291,13 +258,14 @@ def detail(request, queue_id):
         users = prioritized_users
 
     queue_priorities = []
-    for choice in queue.queue_priorities: queue_priorities.append(list(eval(choice))[1])
-
+    for choice in queue.queue_priorities: 
+        queue_priorities.append(list(eval(choice))[1])
     choices = []
-    for choice in queue.queue_priorities: choices.append(list(eval(choice)))
+    for choice in queue.queue_priorities: 
+        choices.append(list(eval(choice)))
+
     priorities_form = PriorityChoiceForm(choices=choices)
 
-    # print(is_mobile(request.META['HTTP_USER_AGENT']))
     context = {
         'queue': queue,
         'users': users,
@@ -305,7 +273,7 @@ def detail(request, queue_id):
         'user_can_enter_remain': user_can_enter_remain,
         'queue_priorities' : queue_priorities,
         'priorities_form': priorities_form,
-        'chat_messages' : chat_messages,
+        'test': str(request.user.emailconfirmed.user_verified),
         # 'is_mobile' : is_mobile(request.META['HTTP_USER_AGENT'])
     }
     if len(current_user) != 0:

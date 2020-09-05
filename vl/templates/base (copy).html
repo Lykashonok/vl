@@ -16,24 +16,25 @@
     <title>{% block title %} Очереди на лабки {% endblock title %}</title>
 </head>
 <body>
-    <header class="lab-queue__header">
-        <nav class="navigation">
-            <div class="navigation__container" style="max-width: 85%;">
-                <div class="navigation__block">
-                    <a class="navigation__title" href="/lab_queue">Очереди</a>
-                    <div class="navigation__create">
-                        {% if user.profile.type != 'student' %}
-                            <a class="navigation__link" href="{% url 'lab_queue:newqueue' %}">Новая очередь</a>
-                        {% endif %}
-                    </div>
+    <header class="site-header">
+        <nav class="navbar navbar-expand-md navbar-dark bg-steel sticky-top">
+            <div class="container" style="max-width: 85%;">
+                <a class="navbar-brand mr-4" href="/lab_queue">Очереди</a>
+                <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button> -->
+                <div class="navbar-nav mr-auto">
+                    {% if user.profile.type != 'student' %}
+                        <a class="nav-item nav-link" href="{% url 'lab_queue:newqueue' %}">Новая очередь</a>
+                    {% endif %}
                 </div>
-                <div class="navigation__block">
+                <div class="navbar-nav">
                     {% if user.is_authenticated %}
-                        <a class="navigation__link" href="{% url 'lab_queue:logout' %}">Выйти</a>
-                        <a class="navigation__link" href="{% url 'lab_queue:account' %}">Мой аккаунт</a>
+                        <a class="nav-item nav-link" href="{% url 'lab_queue:logout' %}">Выйти</a>
+                        <a class="nav-item nav-link" href="{% url 'lab_queue:account' %}">Мой аккаунт</a>
                     {% else %}
-                        <a class="navigation__link" href="{% url 'lab_queue:login' %}">Войти</a>
-                        <a class="navigation__link" href="{% url 'lab_queue:register' %}">Зарегистрироваться</a>
+                        <a class="nav-item nav-link" href="{% url 'lab_queue:login' %}">Войти</a>
+                        <a class="nav-item nav-link" href="{% url 'lab_queue:register' %}">Зарегистрироваться</a>
                     {% endif%}
                 </div>
             </div>
