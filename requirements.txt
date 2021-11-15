@@ -5,7 +5,7 @@ Django==3.0.6
 django-crispy-forms==1.9.0
 django-grappelli==2.14.1
 django-multiselectfield==0.1.12
-pip==20.1
+pip==21.1
 psycopg2==2.8.5
 pytz==2020.1
 setuptools==46.2.0
